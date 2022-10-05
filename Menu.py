@@ -20,31 +20,6 @@ sg.theme('DarkTeal3')
 
 infoText = "Welcome to JAB Hotel!"
 
-class Customer:
-    def __init__(self, name="No Name", phone="No Phone", email="No Email", customerID =0, reservationNumber =0, roomNumber=0, roomType=0, checkedIn="No Reservation", checkedOut="No Reservation", nightsReserved = 0, orderedItems = "None", extrasTotal=0, cancellationFee=0,total=0 ):
-        self.name = name
-        self.phone = phone
-        self.email = email
-        self.customerID = customerID
-        self.reservationNumber = reservationNumber
-        self.roomNumber = roomNumber
-        self.roomType = roomType
-        self.checkedIn = checkedIn
-        self.checkedOut = checkedOut
-        self.nightsReserved = nightsReserved
-        self.orderedItems = orderedItems
-        self.extrasTotal = extrasTotal
-        self.cancellationFee = cancellationFee
-        self.total = total
-
-    def printInfo(self,verbose=True): #Can print all info or just a little bit
-        if (verbose == True):
-            print(f"Name #: {self.name} // CustomerID: {self.customerID} // Phone: {self.phone} // Email: {self.email} // roomNumber: {self.roomNumber} // roomType: {self.roomType} // Reservation Start: {self.checkedIn} // Reservation End: {self.checkedOut}")
-            print(f"nightsReserved: {self.nightsReserved} // orderedItems: {self.orderedItems} // extrasTotal: {self.extrasTotal} // cancellationFee: {self.cancellationFee} // total: {self.total}")
-        else:
-            print(f"Name #: {self.name} // CustomerID: {self.customerID} // Phone: {self.phone} // Email: {self.email} // roomNumber: {self.roomNumber}")
-
-
 class Room:
     def __init__(self,roomType=0,roomNumber=0, roomStatus=False,customerID=0,customerCount=0,reserveStart="No Reservation",reserveEnd="No Reservation"):
         self.roomType = roomType
@@ -93,6 +68,7 @@ def InformationForm(): # Will let the user input their information
     return fullname, values[1], values[2]
 # The input data looks like a simple list 
 # when automatic numbered
+
 
 
 def Login(): #Login Screen to choose which experience to view, returns a string saying what was chosen and a welcome message
@@ -192,7 +168,7 @@ def Main(): #Main Menu, launches all of the options
     layoutLeft = [
         [sg.Button(button_text='Login', key = '-MENU1-', size = (25,5))],
         [sg.Button(button_text='Create Test Room [Debug]', key = '-MENU2-', size = (25,5))],
-        [sg.Button(button_text='Customer Form [Debug]', key = '-MENU3-', size = (25,5))],
+        [sg.Button(button_text='List All Rooms [Debug]', key = '-MENU3-', size = (25,5))],
         [sg.Button(button_text='Display Rooms', key = '-MENU4-', size = (25,5))],
         [sg.Text(infoText, key='-INFO-', font='Default 12', size = (25,30), p = (10,10))]
         ]
@@ -217,9 +193,6 @@ def Main(): #Main Menu, launches all of the options
     rooms = []
     rooms.append( Room() )
 
-    customers = []
-    customers.append( Customer() )
-    
     while True:     # The Event Loop
         event, values = window.read()#timeout=1)
 
@@ -247,7 +220,9 @@ def Main(): #Main Menu, launches all of the options
         if event == '-MENU3-':
             print("Clicked Menu 3")
             window['-INFO-'].update("Menu 3 Clicked")
+            
             #Prints all room information to console
+
             #for obj in rooms:
             #    obj.printInfo()
             customers[0].name,customers[0].phone,customers[0].email = InformationForm()

@@ -44,7 +44,6 @@ class Customer:
         else:
             print(f"Name #: {self.name} // CustomerID: {self.customerID} // Phone: {self.phone} // Email: {self.email} // roomNumber: {self.roomNumber}")
 
-
 class Room:
     def __init__(self,roomType=0,roomNumber=0, roomStatus=False,customerID=0,customerCount=0,reserveStart="No Reservation",reserveEnd="No Reservation"):
         self.roomType = roomType

@@ -50,6 +50,27 @@ class Room:
         else:
             print(f"Room #: {self.roomNumber} // Status: {self.roomStatus} // Reservation Start: {self.reserveStart} // Reservation End: {self.reserveEnd}")
 
+def InformationForm(): # Will let the user input their information
+    FormLayout = [
+        [sg.Text('Please enter reservation information: ')],
+        [sg.Text('First Name', size =(15, 1)), sg.InputText(), sg.Text('Last Name', size =(15, 1), justification='Left'), sg.InputText()],
+        [sg.Text('Phone', size =(15, 1)), sg.InputText()],
+        [sg.Text('Email', size =(15, 1)), sg.InputText()],
+        [sg.Submit(), sg.Cancel()]
+    ]
+  
+    FormWindow = sg.Window('Simple data entry window', FormLayout)
+    event, values = FormWindow.read()
+    
+    print(event, values[0], values[1], values[2])   
+    FormWindow.close()
+    fullname = values[0]+" "+values[1]
+    return fullname, values[1], values[2]
+# The input data looks like a simple list 
+# when automatic numbered
+
+
+
 def Login(): #Login Screen to choose which experience to view, returns a string saying what was chosen and a welcome message
     login = [[sg.Button(button_text='EMPLOYEE', key = '-EMPLOYEE-', size = (25,5),p=(100,50))],[sg.Button(button_text='GUEST', key = '-GUEST-', size = (25,5), p=(100,5))]]
     loginWindow = sg.Window("Login Screen", login, size=(400,400), finalize=True)
@@ -201,9 +222,12 @@ def Main(): #Main Menu, launches all of the options
             window['-INFO-'].update("Menu 3 Clicked")
             
             #Prints all room information to console
-            for obj in rooms:
-                obj.printInfo()
-        
+
+            #for obj in rooms:
+            #    obj.printInfo()
+            customers[0].name,customers[0].phone,customers[0].email = InformationForm()
+            customers[0].printInfo("FALSE")
+
         if event == '-MENU4-':
             print("Clicked Menu 4")
             window['-INFO-'].update("Menu 4 Clicked")  

@@ -90,7 +90,7 @@ def InformationForm(): # Will let the user input their information
     print(event, values[0], values[1], values[2])   
     FormWindow.close()
     fullname = values[0]+" "+values[1]
-    return fullname
+    return fullname, values[1], values[2]
 # The input data looks like a simple list 
 # when automatic numbered
 
@@ -250,7 +250,7 @@ def Main(): #Main Menu, launches all of the options
             #Prints all room information to console
             #for obj in rooms:
             #    obj.printInfo()
-            customers[0].name = InformationForm()
+            customers[0].name,customers[0].phone,customers[0].email = InformationForm()
             customers[0].printInfo("FALSE")
 
         if event == '-MENU4-':

@@ -161,11 +161,11 @@ def LoadRooms(rooms):
     #rooms[1].setStatus(True) 
     rooms[2].setStatus(True)
     #rooms[3].setStatus(True)
-    #rooms[4].setStatus(True)
-    #rooms[5].setStatus(True)
+    rooms[4].setStatus(True)
+    rooms[5].setStatus(True)
     #rooms[6].setStatus(True)
     rooms[7].setStatus(True)
-    #rooms[8].setStatus(True)
+   # rooms[8].setStatus(True)
     rooms[9].setStatus(True)
     #rooms[10].setStatus(True)
     rooms[11].setStatus(True)
@@ -175,7 +175,7 @@ def LoadRooms(rooms):
 
 def DisplayRooms(rooms):
     print("Displaying Room List")
-    # Canvas to display interactable objects
+    # Size of room display and the floors of the hotel display
     ROOMS_DISPLAY_W, ROOMS_DISPLAY_H = 400, 400
 
     GROUND_FLOOR = 1
@@ -183,7 +183,11 @@ def DisplayRooms(rooms):
 
     currentFloor = 1
     currentFloorText = "Floor: " + str(currentFloor)+ ""
-    floorChanged = False
+    floorChanged = True
+
+    # For mouse click
+    fig = None
+    last_clicked = 0
 
     RoomsDisplay = sg.Graph(
         canvas_size=(ROOMS_DISPLAY_W, ROOMS_DISPLAY_H),
@@ -206,64 +210,25 @@ def DisplayRooms(rooms):
     RoomsDisplayWindow = sg.Window("Room Display", RoomsLayout, finalize = True)
     RoomsGraph = RoomsDisplayWindow["-DISPLAY-"]
 
-    # Draw floorplan and room availability (From left to right 1-4)
+    # Draw floorplan for floor and room availability (From left to right 1-4)
     # Each room has two images, Full (Red) and Empty (Green)
-    #RoomsGraph.draw_image(data=Floorplan, location=(0,ROOMS_DISPLAY_H))
     floorplans = [    RoomsGraph.draw_image(data=Floorplan, location=(0,ROOMS_DISPLAY_H)),  RoomsGraph.draw_image(data=FloorThree, location=(0,0)),RoomsGraph.draw_image(data=FloorFour, location=(0,0)) ]
     roomCoords = [(0,0),(19,150),(97,309),(224,309),(302,150)]
     roomMedCoords = [(0,0),(19,329),(146,329),(272,329)]
     roomLargeCoords = [(0,0),(90,349)]
 
-    roomSquares = [ RoomsGraph.draw_image(data=RoomFull, location=(0,0)),   
-                    RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)), 
-                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)),
-                    RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)),
-                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)),
-                    RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)), 
-                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)),
-                    RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)) ]
+    roomSquares = [ RoomsGraph.draw_image(data=RoomFull, location=(0,0)), RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)), 
+                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)), RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)),
+                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)), RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)), 
+                    RoomsGraph.draw_image(data=RoomFull, location=(0,0)), RoomsGraph.draw_image(data=RoomEmpty, location=(0,0)) ]
     
-    roomMed = [ RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)),   
-                RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)), 
-                RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)),
-                RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)),
-                RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)),
-                RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)), 
-    ]
+    roomMed = [ RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)), RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)), 
+                RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)), RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)),
+                RoomsGraph.draw_image(data=RoomMedFull, location=(0,0)), RoomsGraph.draw_image(data=RoomMedEmpty, location=(0,0)) ]
 
-    roomLarge = [   RoomsGraph.draw_image(data=RoomLargeFull, location=(0,0)),   
-                    RoomsGraph.draw_image(data=RoomLargeEmpty, location=(0,0)), 
-    ]
-    #roomSquares = [roomOneFull, roomOneEmpty, roomTwoFull,roomTwoEmpty, roomThreeFull,roomThreeEmpty,roomFourFull,roomFourEmpty]
-    
-    #Room 1
-    if rooms[1].roomStatus == 1: #Taken
-        RoomsGraph.relocate_figure(roomSquares[0],roomCoords[1][0],roomCoords[1][1])
-    else:
-        RoomsGraph.relocate_figure(roomSquares[1],roomCoords[1][0],roomCoords[1][1])
-
-    #Room 2
-    if rooms[2].roomStatus == 1:
-        RoomsGraph.relocate_figure(roomSquares[2],roomCoords[2][0],roomCoords[2][1])
-    else:
-        RoomsGraph.relocate_figure(roomSquares[3],roomCoords[2][0],roomCoords[2][1])
-
-    #Room 3
-    if rooms[3].roomStatus == 1:
-        RoomsGraph.relocate_figure(roomSquares[4],roomCoords[3][0],roomCoords[3][1])
-    else:
-        RoomsGraph.relocate_figure(roomSquares[5],roomCoords[3][0],roomCoords[3][1])
-
-    #Room 4
-    if rooms[4].roomStatus == 1:
-        RoomsGraph.relocate_figure(roomSquares[6],roomCoords[4][0],roomCoords[4][1])
-    else:
-        RoomsGraph.relocate_figure(roomSquares[7],roomCoords[4][0],roomCoords[4][1])
+    roomLarge = [   RoomsGraph.draw_image(data=RoomLargeFull, location=(0,0)), RoomsGraph.draw_image(data=RoomLargeEmpty, location=(0,0)) ]
 
     RoomsDisplayWindow['-FLOOR-'].update(currentFloorText)
-
-    fig = None
-    last_clicked = 0
 
     while True:         # The Event Loop
         event, values = RoomsDisplayWindow.read(timeout=1)
@@ -285,7 +250,7 @@ def DisplayRooms(rooms):
     
         if floorChanged == True:
             posOffset = (currentFloor - 1)*4
-
+            print(f"currFloor: {currentFloor}")
             if currentFloor < 3:
                 RoomsGraph.relocate_figure(floorplans[0],0,ROOMS_DISPLAY_H)
                 RoomsGraph.relocate_figure(floorplans[1],0,0)
@@ -371,22 +336,30 @@ def DisplayRooms(rooms):
             fig = None
 
         if (last_clicked != 0 and last_clicked != None):
-            if last_clicked == 4 or last_clicked == 5:
+            if (last_clicked == 4 or last_clicked == 5) and currentFloor == 1:
                 print(f'Room 1')
-            if last_clicked == 6 or last_clicked == 7:
+            if (last_clicked == 6 or last_clicked == 7) and currentFloor == 1:
                 print('Room 2')
-            if last_clicked == 8 or last_clicked == 9:
+            if (last_clicked == 8 or last_clicked == 9) and currentFloor == 1:
                 print('Room 3')
-            if last_clicked == 10 or last_clicked == 11:
+            if (last_clicked == 10 or last_clicked == 11) and currentFloor == 1:
                 print('Room 4')
+            if (last_clicked == 4 or last_clicked == 5) and currentFloor == 2:
+                print(f'Room 5')
+            if (last_clicked == 6 or last_clicked == 7) and currentFloor == 2:
+                print(f'Room 6')
+            if (last_clicked == 8 or last_clicked == 9) and currentFloor == 2:
+                print(f'Room 7')
+            if (last_clicked == 10 or last_clicked == 11) and currentFloor == 2:
+                print('Room 8')
             if last_clicked == 12 or last_clicked == 13:
-                print("Room 1 Third Floor")
+                print("Room 9")
             if last_clicked == 14 or last_clicked == 15:
-                print("Room 2 Third Floor")
+                print("Room 10")
             if last_clicked == 16 or last_clicked == 17:
-                print("Room 3 Third Floor")
+                print("Room 11")
             if last_clicked == 18 or last_clicked == 19:
-                print("Presidential Suite- Fourth Floor")
+                print("Room 12- Presidential Suite")
             last_clicked = None
 
     RoomsDisplayWindow.close()
@@ -425,12 +398,8 @@ def Main(): #Main Menu, launches all of the options
 
     window['-INFO-'].update(userMessage)
     
-    # Creates an empty list to store the rooms in and creates an empty test room
-    #totalRooms = 0
-
     rooms = []
     LoadRooms(rooms)
-    #rooms.append( Room() )
 
     customers = []
     customers.append( Customer() )
@@ -454,20 +423,10 @@ def Main(): #Main Menu, launches all of the options
             
             for obj in rooms:
                 obj.printInfo()
-            # This adds one to total room count and makes a test room with the given information
-            # TODO- Change to take to a form to collect all of the needed information instead
-            #rooms.append( Room() )
-            #totalRooms = totalRooms + 1
-            #print(f"Making room number: {totalRooms}")
-            #rooms.append(Room(1,totalRooms,True,299,2,"08.04.1992",reserveEnd="08.04.2077"))
-            #rooms[totalRooms].printInfo()
         
         if event == '-MENU3-':
             print("Clicked Menu 3")
             window['-INFO-'].update("Menu 3 Clicked")
-            #Prints all room information to console
-            #for obj in rooms:
-            #    obj.printInfo()
 
             customers[0].assignCustomerInfo( InformationForm() )
             customers[0].printInfo()

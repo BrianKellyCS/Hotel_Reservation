@@ -22,6 +22,7 @@ sg.theme('DarkTeal3')
 infoText = "Welcome to JAB Hotel!"
 baseCancellationFee = 200
 hotel = Hotel()
+hotel.initializeHotelData()
 rooms = hotel.rooms
 currentGuest = None
 

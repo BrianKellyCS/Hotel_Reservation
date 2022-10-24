@@ -26,13 +26,12 @@ hotel.initializeHotelData()
 rooms = hotel.rooms
 currentGuest = None
 
-
-
 def InformationForm(): # Will let the user input their information
     FormLayout = [
         [sg.Text('Please enter reservation information: ')],
         [sg.Text('First Name', size =(15, 1)), sg.InputText(), sg.Text('Last Name', size =(15, 1), justification='Left'), sg.InputText()],
         [sg.Text('Phone', size =(15, 1)), sg.InputText(), sg.Text('Email', size =(15, 1), justification='Left'), sg.InputText()],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m-%d-%y', default_date_m_d_y=(1,1,2022)), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m-%d-%y', default_date_m_d_y=(1,2,2022)), sg.Input(key='-ENDDATE-', size=(20,1)), ],
         [sg.Submit(), sg.Cancel()]
     ]
   
@@ -41,6 +40,8 @@ def InformationForm(): # Will let the user input their information
 
     FormWindow.close()   
     if (event == "Submit"):
+        print(values['-DATE-'])
+        print(values['-ENDDATE-'])
         return values[0], values[1], values[2], values[3]
 
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
@@ -74,6 +75,43 @@ def Login(): #Login Screen to choose which experience to view, returns a string 
 
     loginWindow.close()
     return userType, userStatus
+
+def SearchRooms(hotel):
+    SEARCH_CANVAS_W, SEARCH_CANVAS_H = 300,350
+    
+    RoomTypeList = ["Basic", "Deluxe", "Suite"]
+    SearchList = ["None"]
+    roomChosen = 0
+
+    SearchLayout = [
+        [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
+        [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList,default_value=RoomTypeList[0], s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],
+        
+        [sg.Submit(), sg.Cancel()]
+    ]
+
+    FormWindow = sg.Window('Search Rooms', SearchLayout)
+   
+    while True:
+        event, values = FormWindow.read()
+        if (event == "-ROOMTYPE-"):
+            typeChosen = values[event]
+            SearchList = []
+            SearchList = hotel.searchRooms(typeChosen)
+            # Add a date check here, remove any with a bad date
+            FormWindow['-SEARCH-'].update(value="None", values=SearchList)
+
+        if (event == "-SEARCH-"):
+            roomChosen = values[event]
+
+            if roomChosen == "None":
+                roomChosen = 0
+
+        if (event == "Submit"):
+            return roomChosen
+
+        if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
+            return 0
 
 def DisplayRooms(rooms):
     print("Displaying Room List")
@@ -324,9 +362,13 @@ def Main(): #Main Menu, launches all of the options
             print(f"Current Guest: {currentGuest}")
 
             #Lets user search for available rooms
-            rType = input("Select the Room Type you would like to reserve\nBasic, Deluxe or Suite\n")
-            hotel.searchRooms(rType)
-            r = input("Which room would you like to reserve?\n")
+            #rType = input("Select the Room Type you would like to reserve\nBasic, Deluxe or Suite\n")
+            #hotel.searchRooms(rType)
+            #r = input("Which room would you like to reserve?\n")
+            #roomToReserve = hotel.rooms[int(r)]
+            print("Selecting room reservation")
+            r = SearchRooms(hotel)
+
             roomToReserve = hotel.rooms[int(r)]
             
             #Once room is selected, checks guest information.

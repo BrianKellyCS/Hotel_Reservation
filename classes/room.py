@@ -31,11 +31,16 @@ class Room:
 
 
     def searchRooms(self, roomType):
+        roomList = []
+
         if roomType in self.roomChoices:
             for idx in Room.totalRooms:
                 if idx.roomType == roomType and idx.roomStatus == 0:
                     print(idx)
+                    roomList.append(idx.roomNumber) #Returns a list of room numbers available
             
+            return roomList
+                
         else:
             print("Must enter a valid room type\n")
 

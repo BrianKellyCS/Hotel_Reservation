@@ -337,7 +337,7 @@ def Main(): #Main Menu, launches all of the options
             else:
                 
                 #If form filled out or guest info already assigned. continues to set reservation
-                hotel.createReservation(currentGuest,"10/10/2020","10/13/2020",roomToReserve) #Example reservation
+                hotel.createReservation(currentGuest.guestID,"10/10/2020","10/13/2020",roomToReserve.roomNumber) #Example reservation
         
         if event == '-MENU3-':
             print("Clicked Menu 3")

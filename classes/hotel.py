@@ -1,10 +1,10 @@
 import csv
 from classes.guest import *
 from classes.room import *
+from classes.reservation import *
 
 
-
-class Hotel(Guest,Room):
+class Hotel(Room,Reservation):
     def __init__(self):
         self.rooms = Room.totalRooms #load rooms from data set
         self.guests = Guest.totalGuests #load customers from data set
@@ -28,10 +28,12 @@ class Hotel(Guest,Room):
             except Exception as e:
                 print(e)
         for guests in guest_data:
-            Guest(guests[0],guests[1],guests[2],guests[3],guests[4])
+            Guest(guests[0],guests[1],guests[2],guests[3],guests[4],guests[5])
 
         for res in reservation_data:
             Reservation()
+
+
     
     def managerReport(self): #2nd sprint
         pass
@@ -43,25 +45,26 @@ class Hotel(Guest,Room):
 
 
 hotel = Hotel()
-hotel.initializeHotelData()
+hotel.initializeHotelData() #fetch data from csv files
 
-currentGuest = hotel.guests[2]
+currentGuest = hotel.guests[-1] #assign a guest from guest data (-1 index is the last guest in list)
 
-hotel.searchRooms("Basic") #Will be buttons in GUI, not entered text
-
+hotel.searchRooms("Basic") #Will be buttons in GUI , not entered text
 roomToReserve = hotel.rooms[1] #Button in GUI to reserve the room selected
 
-hotel.createReservation(currentGuest,"10/10/2020","10/13/2020",roomToReserve) #TO DO: calendar object in GUI to select dates. Parameters: (Guest object, Start Date, End Date, Room object)
-print(currentGuest.reservation)
+#parameters for createReservation (guestID, startDate, endDate, roomNumber)
+hotel.createReservation(currentGuest.guestID,"10/10/2020","10/13/2020",roomToReserve.roomNumber) 
 
-
-
-
+#example creating guest from guest form
 list = ["Bob", "job", "555-5555", "bobjob@yahoo.com"] #Comes from Guest Form
 currentGuest = hotel.createGuest(list)
-print(hotel.guests[-1])
-#or
-print(currentGuest)'''
+print(currentGuest) #or print(hotel.guests[-1]) 
+
+#get guest by ID
+print(hotel.returnGuestByID(17)) #returns Bob job
+
+print(hotel.reservations[-1]) #prints latest reservation created''' 
+
 
 
 

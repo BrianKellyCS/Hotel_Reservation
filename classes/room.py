@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 class Room:
     
@@ -20,6 +20,11 @@ class Room:
     def setRoomStatus(self, roomStatus):
         if int(roomStatus) == 0 or int(roomStatus) == 1:
             self.roomStatus = roomStatus
+
+            df = pd.read_csv('data/room_data.csv')
+            filt = (df['roomNumber'] == int(self.roomNumber))
+            df.loc[filt,'roomStatus'] = roomStatus
+            df.to_csv('data/room_data.csv',index = False)
         else:
             print("ERROR: Attempt to set Room Status with invalid parameter.\n")
     
@@ -33,6 +38,15 @@ class Room:
             
         else:
             print("Must enter a valid room type\n")
+
+    def returnRoomByNumber(self,roomNumber):
+        found = 0
+        for idx in Room.totalRooms:
+            if str(roomNumber) == str(idx.roomNumber):
+                return idx
+                found = 1
+        if not found:
+            return f'Room {roomNumber} not found'
 
 
 

@@ -30,8 +30,11 @@ class Hotel(Room,Reservation):
         for guests in guest_data:
             Guest(guests[0],guests[1],guests[2],guests[3],guests[4],guests[5])
 
-        for res in reservation_data:
-            Reservation()
+        for idx,res in enumerate(reservation_data):
+            if idx > 0:
+                Reservation(res[0],datetime.strptime(res[1], '%m/%d/%Y'),datetime.strptime(res[2], '%m/%d/%Y'),res[3],res[4])
+            else:
+                Reservation(res[0],res[1],res[2],res[3],res[4])
 
 
     

@@ -9,10 +9,10 @@ class Reservation(Guest):
     #Class variables
     totalReservations = []
 
-    def __init__(self,guestID = None, startDate=None,endDate=None, roomNumber = None):
+    def __init__(self,guestID = None, startDate=None,endDate=None, roomNumber = None,reservationNumber = None):
         
         self.guestID = guestID
-        self.reservationNumber = random.randint(1,500) if startDate != None else None #TO DO : method to assign better reservation number. ensure no repeat
+        self.reservationNumber = reservationNumber if reservationNumber != None else random.randint(1,500)#random.randint(1,500) if startDate != None else None #TO DO : method to assign better reservation number. ensure no repeat
         self.startDate = startDate
         self.endDate = endDate
         self.roomNumber = roomNumber
@@ -24,7 +24,7 @@ class Reservation(Guest):
 
 
     def __iter__(self):
-        return iter([self.guestID,self.reservationNumber,self.startDate,self.endDate,self.roomNumber])
+        return iter([self.guestID,self.startDate,self.endDate,self.roomNumber,self.reservationNumber])
 
     def createReservation(self,guestID,startDate,endDate,roomNumber):
         guestObj = self.returnGuestByID(guestID)

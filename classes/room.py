@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime
 
 class Room:
     
@@ -30,19 +31,36 @@ class Room:
     
 
 
-    def searchRooms(self, roomType):
+    def searchRooms(self, roomType,startDate,endDate):
         roomList = []
-
+        startDate = datetime.strptime(startDate, '%m/%d/%Y')
+        endDate = datetime.strptime(endDate, '%m/%d/%Y')
         if roomType in self.roomChoices:
+            
+            #Gathers all rooms of room type
             for idx in Room.totalRooms:
                 if idx.roomType == roomType and idx.roomStatus == 0:
-                    print(idx)
-                    roomList.append(idx.roomNumber) #Returns a list of room numbers available
+                    roomList.append(idx.roomNumber)
+
+            #Removes rooms with conflicting reservations
+            for idx,res in enumerate(self.totalReservations[1:]): #starting at index 1 (index 0 is header)
+                
+                #Try block ensures that the dates being compared are dateTime
+                try:
+                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
+                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
+                except:
+                    resStart = res.startDate
+                    resEnd = res.endDate
+                if (startDate < resStart and endDate <= resStart) or (startDate >= resEnd and endDate > resEnd):
+                    print('Room: ',res.roomNumber, 'Res #: ',res.reservationNumber,' kept')
+                else:
+                    try:
+                        roomList.remove(res.roomNumber)
+                    except Exception as e:
+                        pass
             
             return roomList
-                
-        else:
-            print("Must enter a valid room type\n")
 
     def returnRoomByNumber(self,roomNumber):
         found = 0

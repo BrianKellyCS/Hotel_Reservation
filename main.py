@@ -83,7 +83,7 @@ def SearchRooms(hotel):
     SearchLayout = [
         [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
         [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList,default_value=RoomTypeList[0], s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m-%d-%y', default_date_m_d_y=(1,1,2022)), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m-%d-%y', default_date_m_d_y=(1,2,2022)), sg.Input(key='-ENDDATE-', size=(20,1)) ],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y', default_date_m_d_y=(1,1,2022)), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m/%d/%Y', default_date_m_d_y=(1,2,2022)), sg.Input(key='-ENDDATE-', size=(20,1)) ],
         [sg.Submit(key='-SUBMIT-'), sg.Cancel()]
     ]
 
@@ -97,8 +97,8 @@ def SearchRooms(hotel):
         if (event == "-ROOMTYPE-"):
             typeChosen = values[event]
             SearchList = []
-            SearchList = hotel.searchRooms(typeChosen)
-            # Add a date check here, remove any with a bad date
+            if values['-DATE-'] != '' and values['-ENDDATE-'] != '':
+                SearchList = hotel.searchRooms(typeChosen,values['-DATE-'],values['-ENDDATE-'])
             SearchWindow['-SEARCH-'].update(value="None", values=SearchList)
             roomChosen = 0
 

@@ -16,19 +16,10 @@ class Hotel(Room,Reservation):
         reservation_data = list(csv.reader(open('data/reservation_data.csv')))
 
         for rooms in room_data:
-            try:
-                r = Room()
-                r.roomType = rooms[0]
-                r.roomNumber = rooms[1]
-                try:
-                    r.roomStatus = int(rooms[2])
-                except:
-                    r.roomStatus = rooms[2]
-                r.roomPrice = rooms[3]
-            except Exception as e:
-                print(e)
+            Room(rooms[0],rooms[1],rooms[2])
+
         for guests in guest_data:
-            Guest(guests[0],guests[1],guests[2],guests[3],guests[4],guests[5])
+            Guest(guests[0],guests[1],guests[2],guests[3],guests[4])
 
         for idx,res in enumerate(reservation_data):
             if idx > 0:

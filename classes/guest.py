@@ -9,12 +9,11 @@ class Guest():
 
 
     
-    def __init__(self, fName="No First Name", lName ="No Last Name", phone="No Phone", email="No Email", guestStatus =0, guestID = 0):
+    def __init__(self, fName="No First Name", lName ="No Last Name", phone="No Phone", email="No Email", guestID = 0):
         self.fName = fName
         self.lName = lName
         self.phone = phone
         self.email = email
-        self.guestStatus = guestStatus
         self.guestID = guestID
         
 
@@ -22,10 +21,10 @@ class Guest():
 
     
     def __str__(self):
-        return f"Name: {self.fName} {self.lName} // guestID: {self.guestID} // Phone: {self.phone} // Email: {self.email} // Guest Status: {self.guestStatus}"#// Reservation #: {None if self.reservation == None else self.reservation.reservationNumber}"
+        return f"Name: {self.fName} {self.lName} // guestID: {self.guestID} // Phone: {self.phone} // Email: {self.email}"#// Reservation #: {None if self.reservation == None else self.reservation.reservationNumber}"
 
     def __iter__(self):
-        return iter([self.fName,self.lName,self.phone,self.email,self.guestStatus,self.guestID,])
+        return iter([self.fName,self.lName,self.phone,self.email,self.guestID,])
 
     def assignGuestID(self,id): 
         isValid = 1
@@ -52,8 +51,7 @@ class Guest():
     def createGuest(self, list): #Assigns guest their information from the form
         try:
             newGuest = Guest(list[0],list[1],list[2],list[3])
-            print(Guest.totalGuests[-1].guestID)
-            newGuest.assignGuestID(Guest.totalGuests[-1].guestID) #sends previous guests ID as parameter, new guest's ID increments by one (while ensuring not a repeat)
+            newGuest.assignGuestID(Guest.totalGuests[-2].guestID) #sends previous guests ID as parameter, new guest's ID increments by one (while ensuring not a repeat)
             with open('data/guest_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)
                 writer.writerow(newGuest)

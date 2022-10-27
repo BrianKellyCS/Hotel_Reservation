@@ -12,7 +12,7 @@ class Reservation(Guest):
     def __init__(self,guestID = None, startDate=None,endDate=None, roomNumber = None,reservationNumber = None):
         
         self.guestID = guestID
-        self.reservationNumber = reservationNumber if reservationNumber != None else random.randint(1,500)#random.randint(1,500) if startDate != None else None #TO DO : method to assign better reservation number. ensure no repeat
+        self.reservationNumber = reservationNumber if reservationNumber != None else random.randint(1,500)#TO DO : method to assign better reservation number. ensure no repeat
         self.startDate = startDate
         self.endDate = endDate
         self.roomNumber = roomNumber
@@ -30,16 +30,12 @@ class Reservation(Guest):
         guestObj = self.returnGuestByID(guestID)
         roomObj = self.returnRoomByNumber(roomNumber)
         try:
-            if int(guestObj.guestStatus) == 1:
-                print("\nGuest already has reservation.\n")
-            else:
-                newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
-                guestObj.setGuestStatus(1)
-                roomObj.setRoomStatus(1)
-                print(f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n")
-                with open('data/reservation_data.csv', 'a',newline='') as stream:
-                    writer = csv.writer(stream)
-                    writer.writerow(newReservation)
+
+            newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
+            print(f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n")
+            with open('data/reservation_data.csv', 'a',newline='') as stream:
+                writer = csv.writer(stream)
+                writer.writerow(newReservation)
                 
 
         except Exception as e:

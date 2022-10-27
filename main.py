@@ -213,14 +213,15 @@ def DisplayRooms(rooms):
                     fullx = 2*x - 2
                     emptyx = 2*x - 1
 
-                    if rooms[currRoom].roomStatus == 1: #Full
-                        print(f"Room{currRoom} // {x} is Taken!")
-                        RoomsGraph.relocate_figure(roomSquares[fullx],roomCoords[x][0],roomCoords[x][1])
-                        RoomsGraph.relocate_figure(roomSquares[emptyx],roomCoords[0][0],roomCoords[0][1])
-                    else:
+                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
                         print(f"Room:{currRoom} // {x} is not taken")
                         RoomsGraph.relocate_figure(roomSquares[emptyx],roomCoords[x][0],roomCoords[x][1])
                         RoomsGraph.relocate_figure(roomSquares[fullx],roomCoords[0][0],roomCoords[0][1])
+                    else:
+                        print(f"Room{currRoom} // {x} is Taken!")
+                        RoomsGraph.relocate_figure(roomSquares[fullx],roomCoords[x][0],roomCoords[x][1])
+                        RoomsGraph.relocate_figure(roomSquares[emptyx],roomCoords[0][0],roomCoords[0][1])
+
 
             if currentFloor == 3:
                 RoomsGraph.relocate_figure(floorplans[1],0,ROOMS_DISPLAY_H)
@@ -237,14 +238,16 @@ def DisplayRooms(rooms):
                     fullx = 2*x - 2
                     emptyx = 2*x - 1
 
-                    if rooms[currRoom].roomStatus == 1:
-                        print(f"Room{currRoom} // {x} is Taken!")
-                        RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[x][0],roomMedCoords[x][1])
-                        RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[0][0],roomMedCoords[0][1])
-                    else:
+                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
                         print(f"Room:{currRoom} // {x} is not taken")
                         RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[x][0],roomMedCoords[x][1])
                         RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[0][0],roomMedCoords[0][1])
+                    else:
+                        print(f"Room{currRoom} // {x} is Taken!")
+                        RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[x][0],roomMedCoords[x][1])
+                        RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[0][0],roomMedCoords[0][1])
+                        
+
 
             if currentFloor == 4:
                     currRoom = posOffset
@@ -259,14 +262,14 @@ def DisplayRooms(rooms):
                     for x in range (0,6): #move medium rooms away
                         RoomsGraph.relocate_figure(roomMed[x],roomCoords[0][0],roomCoords[0][1])
 
-                    if rooms[currRoom].roomStatus == 1:
-                        print(f"Room{currRoom} is Taken!")
-                        RoomsGraph.relocate_figure(roomLarge[fullx],roomLargeCoords[1][0],roomLargeCoords[1][1])
-                        RoomsGraph.relocate_figure(roomLarge[emptyx],roomLargeCoords[0][0],roomLargeCoords[0][1])
-                    else:
+                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
                         print(f"Room:{currRoom} is not taken")
                         RoomsGraph.relocate_figure(roomLarge[emptyx],roomLargeCoords[1][0],roomLargeCoords[1][1])
                         RoomsGraph.relocate_figure(roomLarge[fullx],roomLargeCoords[0][0],roomLargeCoords[0][1])
+                    else:
+                        print(f"Room{currRoom} is Taken!")
+                        RoomsGraph.relocate_figure(roomLarge[fullx],roomLargeCoords[1][0],roomLargeCoords[1][1])
+                        RoomsGraph.relocate_figure(roomLarge[emptyx],roomLargeCoords[0][0],roomLargeCoords[0][1])
 
             floorChanged = False 
         
@@ -366,11 +369,7 @@ def Main(): #Main Menu, launches all of the options
             global currentGuest
             print(f"Current Guest: {currentGuest}")
 
-            #Lets user search for available rooms
-            #rType = input("Select the Room Type you would like to reserve\nBasic, Deluxe or Suite\n")
-            #hotel.searchRooms(rType)
-            #r = input("Which room would you like to reserve?\n")
-            #roomToReserve = hotel.rooms[int(r)]
+
             print("Selecting room reservation")
             r, rDateStart, rDateEnd  = SearchRooms(hotel)
 
@@ -397,7 +396,7 @@ def Main(): #Main Menu, launches all of the options
             #Updates currentGuest value from form
             currentGuest = hotel.createGuest(InformationForm())
             if currentGuest != None: #If user exits form before filling out
-                print("Updated Current Guest to:",currentGuest.fName,currentGuest.lName)
+                print("Updated Current Guest to:",currentGuest.fName,currentGuest.lName, "(ID: ",currentGuest.guestID,")")
 
         if event == '-MENU4-':
             print("Clicked Menu 4")
@@ -408,3 +407,24 @@ def Main(): #Main Menu, launches all of the options
     window.close()
 
 Main()
+
+'''hotel = Hotel()
+hotel.initializeHotelData() #fetch data from csv files
+
+currentGuest = hotel.guests[-1] #assign a guest from guest data (-1 index is the last guest in list)
+
+hotel.searchRooms("Basic") #Will be buttons in GUI , not entered text
+roomToReserve = hotel.rooms[1] #Button in GUI to reserve the room selected
+
+#parameters for createReservation (guestID, startDate, endDate, roomNumber)
+hotel.createReservation(currentGuest.guestID,"10/10/2020","10/13/2020",roomToReserve.roomNumber) 
+
+#example creating guest from guest form
+list = ["Bob", "job", "555-5555", "bobjob@yahoo.com"] #Comes from Guest Form
+currentGuest = hotel.createGuest(list)
+print(currentGuest) #or print(hotel.guests[-1]) 
+
+#get guest by ID
+print(hotel.returnGuestByID(17)) #returns Bob job
+
+print(hotel.reservations[-1]) #prints latest reservation created'''

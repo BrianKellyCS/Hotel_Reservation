@@ -1,5 +1,7 @@
 import pandas as pd
 from datetime import datetime
+import PySimpleGUI as sg
+from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 
 class Room:
     
@@ -18,8 +20,13 @@ class Room:
         return f"Room #: {self.roomNumber} // Room Type: {self.roomType} // Room Price: {self.roomPrice}"
     
     
+    def getRoom(self,roomNumber):
+        for idx in Room.totalRooms:
+            if str(roomNumber) == str(idx.roomNumber):
+                return idx
+        return f'Room {roomNumber} not found'
 
-
+    
     def searchRooms(self, roomType,startDate,endDate):
         roomList = []
         startDate = datetime.strptime(startDate, '%m/%d/%Y')
@@ -33,17 +40,17 @@ class Room:
 
             return roomList
 
-
     #Handles dates with *args, so function can be used for variable number of arguments:  2  for search rooms (start Date, endDate) and 1 for display rooms (date)
     def isAvailableRoom(self,roomNumber,*args):
+        isAvailable = True
         if len(args) == 2:
             startDate = args[0]
             endDate = args[1]
-            #####JUST UNTIL GUI HAS CALENDAR IN DISPLAY ROOMS
+
             if type(startDate) == str:
                 startDate = datetime.strptime(startDate, '%m/%d/%Y')
                 endDate = datetime.strptime(endDate, '%m/%d/%Y')
-            #####JUST UNTIL GUI HAS CALENDAR IN DISPLAY ROOMS
+
 
             #Removes rooms with conflicting reservations
             for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
@@ -56,17 +63,18 @@ class Room:
                     resEnd = res.endDate
                 if str(res.roomNumber) == str(roomNumber):
                     if (startDate < resStart and endDate <= resStart) or (startDate >= resEnd and endDate > resEnd):
-                        return True
+                        continue
                     else:
-                        return False
-            return True
+                        isAvailable = False
+                        return isAvailable
+            return isAvailable
         elif len(args) == 1:
             date = args[0]
-            #####JUST UNTIL GUI HAS CALENDAR IN DISPLAY ROOMS
+
             if type(date) == str:
                 date = datetime.strptime(date, '%m/%d/%Y')
-            #####JUST UNTIL GUI HAS CALENDAR IN DISPLAY ROOMS
-                        #Removes rooms with conflicting reservations
+
+            #Removes rooms with conflicting reservations
             for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
                 #Try block ensures that the dates being compared are dateTime
                 try:
@@ -77,26 +85,13 @@ class Room:
                     resEnd = res.endDate
                 if str(res.roomNumber) == str(roomNumber):
                     if (date < resStart) or (date >= resEnd):
-                        return True
+                        isAvailable = True
                     else:
-                        return False
-            return True
-        
-        
+                        isAvailable = False
+                        return isAvailable
+            return isAvailable
 
-
-    def returnRoomByNumber(self,roomNumber):
-        found = 0
-        for idx in Room.totalRooms:
-            if str(roomNumber) == str(idx.roomNumber):
-                return idx
-                found = 1
-        if not found:
-            return f'Room {roomNumber} not found'
-
-
-
-
+    
 
     
         '''def filterByDates(self,roomList,startDate,endDate):

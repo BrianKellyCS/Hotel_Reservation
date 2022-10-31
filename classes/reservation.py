@@ -1,6 +1,7 @@
 import random
 from classes.guest import *
 import csv
+from datetime import datetime
 
 
 
@@ -28,7 +29,7 @@ class Reservation(Guest):
 
     def createReservation(self,guestID,startDate,endDate,roomNumber):
         guestObj = self.returnGuestByID(guestID)
-        roomObj = self.returnRoomByNumber(roomNumber)
+        roomObj = self.getRoom(roomNumber)
         try:
 
             newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
@@ -43,7 +44,25 @@ class Reservation(Guest):
             newReservation = None
         
         
-        
+    def getReservation(self,roomNumber,dateToDisplay):
+        #Ensures dateToDisplay in correct format
+        if type(dateToDisplay) == str:
+            dateToDisplay = datetime.strptime(dateToDisplay, '%m/%d/%Y')
+        if not self.isAvailableRoom(roomNumber,dateToDisplay):
+            for res in self.totalReservations:
+                #Ensures dates being compared in correct format
+                try:
+                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
+                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
+                except:
+                    resStart = res.startDate
+                    resEnd = res.endDate
+                if str(res.roomNumber) == str(roomNumber):
+                    if (dateToDisplay >= resStart) and (dateToDisplay < resEnd):
+                        #Returns reservation for room number within specified date
+                        return res
+        else:
+            return f'Room {roomNumber} is available'
 
     def editReservation(self,guestObj,startDate,endDate,roomObj):
         pass

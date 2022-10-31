@@ -2,7 +2,7 @@
 # Menu for Hotel Jab Project
 # Started 10.1.2022
 #
-# This is the main menu/ GUI for the Hotel Project. From here we will be able to manage the customers or look up information or save/load information
+# This is the main menu/ GUI for the Hotel Project. From here we will be able to manage the Guests or look up information or save/load information
 ################################################################################################################################################################
 # TODO:
 #       * Everything is a wip so far, please ignore any bugs
@@ -12,6 +12,7 @@
 import PySimpleGUI as sg
 from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 from classes.hotel import Hotel
+from datetime import date
 
 DISPLAY_W, DISPLAY_H = 600,450
 BG_COLOR = "#1E90FF"
@@ -20,11 +21,42 @@ print("Starting Menu...")
 sg.theme('DarkTeal3')
 
 infoText = "Welcome to JAB Hotel!"
-baseCancellationFee = 200
 hotel = Hotel()
 hotel.initializeHotelData()
 rooms = hotel.rooms
-currentGuest = None
+currentDate = date.today().strftime("%m/%d/%Y") #for default date to pass to function
+
+
+def Login(): #Login Screen to choose which experience to view, returns a string saying what was chosen and a welcome message
+    login = [[sg.Button(button_text='EMPLOYEE', key = '-EMPLOYEE-', size = (25,5),p=(100,50))],[sg.Button(button_text='GUEST', key = '-GUEST-', size = (25,5), p=(100,5))]]
+    loginWindow = sg.Window("Login Screen", login, size=(400,400), finalize=True)
+
+    #Sets default user message and status to non-specific guest
+    userType = "Guest"
+    userStatus = "Welcome Valued Guest!"
+
+    while True:
+        event, values = loginWindow.read(timeout=60)
+        if event == "Exit" or event == sg.WIN_CLOSED:
+            print("Defaulting to guest...")
+            loginWindow.close()
+            return userType, userStatus
+
+
+        if event == '-EMPLOYEE-':
+            print("This is an employee...")
+            userType = "Employee"
+            userStatus = "Hello, EMPLOYEE #8180!"
+            loginWindow.close()
+            return userType, userStatus
+
+
+        if event == '-GUEST-': # For if the user selects guest, they can be logged in
+            print("This is a guest...")
+            userType = "Guest"
+            userStatus = "Welcome VALUED Guest #9999!"
+            loginWindow.close()
+            return userType, userStatus
 
 def InformationForm(): # Will let the user input their information
     FormLayout = [
@@ -34,46 +66,22 @@ def InformationForm(): # Will let the user input their information
         [sg.Submit(), sg.Cancel()]
     ]
   
-    FormWindow = sg.Window('Customer Information Entry', FormLayout)
+    FormWindow = sg.Window('Guest Information Entry', FormLayout)
     event, values = FormWindow.read()
 
     FormWindow.close()   
     if (event == "Submit"):
-        return values[0], values[1], values[2], values[3]
+        if values[0] == '' or values [1] == '' or values [2] == '' or values [3] == '':
+            print('Information not saved. Must fill out form completely')
+        else:
+            return values[0], values[1], values[2], values[3]
 
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
         return None
 
-def Login(): #Login Screen to choose which experience to view, returns a string saying what was chosen and a welcome message
-    login = [[sg.Button(button_text='EMPLOYEE', key = '-EMPLOYEE-', size = (25,5),p=(100,50))],[sg.Button(button_text='GUEST', key = '-GUEST-', size = (25,5), p=(100,5))]]
-    loginWindow = sg.Window("Login Screen", login, size=(400,400), finalize=True)
 
-    #Sets default user message and status to non-specific guest
-    userType = "Guest"
-    userStatus = "Welcome Valued Customer!"
 
-    while True:
-        event, values = loginWindow.read(timeout=60)
-        if event == "Exit" or event == sg.WIN_CLOSED:
-            print("Defaulting to customer...")
-            break
-
-        if event == '-EMPLOYEE-':
-            print("This is an employee...")
-            userType = "Employee"
-            userStatus = "Hello, EMPLOYEE #8180!"
-            break
-
-        if event == '-GUEST-': # For if the user selects guest, they can be logged in
-            print("This is a customer...")
-            userType = "Guest"
-            userStatus = "Welcome VALUED CUSTOMER #9999!"
-            break
-
-    loginWindow.close()
-    return userType, userStatus
-
-def SearchRooms(hotel):
+def SearchRoomsWindow():
     SEARCH_CANVAS_W, SEARCH_CANVAS_H = 300,350
     
     RoomTypeList = ["Basic", "Deluxe", "Suite"]
@@ -82,8 +90,8 @@ def SearchRooms(hotel):
 
     SearchLayout = [
         [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
-        [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList,default_value=RoomTypeList[0], s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y', default_date_m_d_y=(1,1,2022)), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m/%d/%Y', default_date_m_d_y=(1,2,2022)), sg.Input(key='-ENDDATE-', size=(20,1)) ],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m/%d/%Y'), sg.Input(key='-ENDDATE-', size=(20,1)) ],
+        [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList, s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],  
         [sg.Submit(key='-SUBMIT-'), sg.Cancel()]
     ]
 
@@ -120,7 +128,9 @@ def SearchRooms(hotel):
     print(f"Sending back: {roomChosen}")
     return roomSelected, roomDateStart, roomDateEnd
 
-def DisplayRooms(rooms):
+   
+def DisplayRoomsWindow(currentDate):
+    dateToDisplay = currentDate
     print("Displaying Room List")
     # Size of room display and the floors of the hotel display
     ROOMS_DISPLAY_W, ROOMS_DISPLAY_H = 400, 400
@@ -147,6 +157,8 @@ def DisplayRooms(rooms):
 
     RoomsLayoutR =    [[RoomsDisplay]]
     RoomsLayoutL = [
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(10,1)) ],
+        [sg.Button(button_text='Submit', key = '-SUBMIT-', size = (5,1))],
         [sg.Text("Floor: 1", key='-FLOOR-', font='Default 12', size = (25,1), text_color="White")],
         [sg.Button(button_text='^', key = '-UP-', size = (25,5))],
         [sg.Button(button_text='v', key = '-DOWN-', size = (25,5))]
@@ -180,6 +192,12 @@ def DisplayRooms(rooms):
     while True:         # The Event Loop
         event, values = RoomsDisplayWindow.read(timeout=1)
         
+        if event == '-SUBMIT-':
+            dateToDisplay = values['-DATE-'] if values['-DATE-'] != '' else currentDate
+            print(dateToDisplay)
+            floorChanged = True
+            RoomsDisplayWindow['-FLOOR-'].update(currentFloorText)
+
         if event in (sg.WIN_CLOSED, 'Exit', None):
             break
 
@@ -213,7 +231,7 @@ def DisplayRooms(rooms):
                     fullx = 2*x - 2
                     emptyx = 2*x - 1
 
-                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
+                    if hotel.isAvailableRoom(currRoom,dateToDisplay): #Empty
                         print(f"Room:{currRoom} // {x} is not taken")
                         RoomsGraph.relocate_figure(roomSquares[emptyx],roomCoords[x][0],roomCoords[x][1])
                         RoomsGraph.relocate_figure(roomSquares[fullx],roomCoords[0][0],roomCoords[0][1])
@@ -238,7 +256,7 @@ def DisplayRooms(rooms):
                     fullx = 2*x - 2
                     emptyx = 2*x - 1
 
-                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
+                    if hotel.isAvailableRoom(currRoom,dateToDisplay): #Empty
                         print(f"Room:{currRoom} // {x} is not taken")
                         RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[x][0],roomMedCoords[x][1])
                         RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[0][0],roomMedCoords[0][1])
@@ -262,7 +280,7 @@ def DisplayRooms(rooms):
                     for x in range (0,6): #move medium rooms away
                         RoomsGraph.relocate_figure(roomMed[x],roomCoords[0][0],roomCoords[0][1])
 
-                    if hotel.isAvailableRoom(currRoom,"1/10/2022"): #Empty
+                    if hotel.isAvailableRoom(currRoom,dateToDisplay): #Empty
                         print(f"Room:{currRoom} is not taken")
                         RoomsGraph.relocate_figure(roomLarge[emptyx],roomLargeCoords[1][0],roomLargeCoords[1][1])
                         RoomsGraph.relocate_figure(roomLarge[fullx],roomLargeCoords[0][0],roomLargeCoords[0][1])
@@ -285,36 +303,52 @@ def DisplayRooms(rooms):
             last_clicked = fig
             fig = None
 
+        
+        
         if (last_clicked != 0 and last_clicked != None):
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 1:
-                print(f'Room 1')
+                print(hotel.getReservation(1,dateToDisplay))
             if (last_clicked == 6 or last_clicked == 7) and currentFloor == 1:
-                print('Room 2')
+                print(hotel.getReservation(2,dateToDisplay))
             if (last_clicked == 8 or last_clicked == 9) and currentFloor == 1:
-                print('Room 3')
+                print(hotel.getReservation(3,dateToDisplay))
             if (last_clicked == 10 or last_clicked == 11) and currentFloor == 1:
-                print('Room 4')
+                print(hotel.getReservation(4,dateToDisplay))
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 2:
-                print(f'Room 5')
+                print(hotel.getReservation(5,dateToDisplay))
             if (last_clicked == 6 or last_clicked == 7) and currentFloor == 2:
-                print(f'Room 6')
+                print(hotel.getReservation(6,dateToDisplay))
             if (last_clicked == 8 or last_clicked == 9) and currentFloor == 2:
-                print(f'Room 7')
+                print(hotel.getReservation(7,dateToDisplay))
             if (last_clicked == 10 or last_clicked == 11) and currentFloor == 2:
-                print('Room 8')
+                print(hotel.getReservation(8,dateToDisplay))
             if last_clicked == 12 or last_clicked == 13:
-                print("Room 9")
+                print(hotel.getReservation(9,dateToDisplay))
             if last_clicked == 14 or last_clicked == 15:
-                print("Room 10")
+                print(hotel.getReservation(10,dateToDisplay))
             if last_clicked == 16 or last_clicked == 17:
-                print("Room 11")
+                print(hotel.getReservation(11,dateToDisplay))
             if last_clicked == 18 or last_clicked == 19:
-                print("Room 12- Presidential Suite")
+                print(hotel.getReservation(12,dateToDisplay))
             last_clicked = None
 
     RoomsDisplayWindow.close()
 
+
+
+
+
+def DisplayReservations():
+    for res in hotel.reservations:
+        print(res)
+
+def DisplayGuests():
+    for guest in hotel.guests:
+        print(guest)
+
 def Main(): #Main Menu, launches all of the options
+    global userType
+    currentGuest = None
     DISPLAY_CANVAS_W, DISPLAY_CANVAS_H = 300,350
     # Display area used for logo image
     Display = sg.Graph(
@@ -326,26 +360,30 @@ def Main(): #Main Menu, launches all of the options
         background_color=BG_COLOR,
         drag_submits=True)
 
+
     layoutLeft = [
-        [sg.Button(button_text='Login', key = '-MENU1-', size = (25,5))],
-        [sg.Button(button_text='Search Rooms', key = '-MENU2-', size = (25,5))],
-        [sg.Button(button_text='Customer Form [Debug]', key = '-MENU3-', size = (25,5))],
-        [sg.Button(button_text='Display Rooms', key = '-MENU4-', size = (25,5))],
+        [sg.Button(button_text='Switch User', key = '-MENU1-', size = (25,3))],
+        [sg.Button(button_text='Guest Form', key = '-MENU3-', size = (25,3))],
+        [sg.Button(button_text='Search Rooms', key = '-MENU2-', size = (25,3))],
+        [sg.Button(button_text='Display Rooms', key = '-MENU4-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Display Reservations', key = '-MENU5-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Display Guests', key = '-MENU6-', visible = True if userType == "Employee" else False, size = (25,3))],
         [sg.Text(infoText, key='-INFO-', font='Default 12', size = (25,30), p = (10,10))]
-        ]
+        ] 
+        
 
     layoutRight = [[Display]]
 
     layout = [[sg.Col(layoutLeft, p=0), sg.Col(layoutRight, p=0)]]
 
-    # First start user login popup
-    userType, userMessage = Login()
+
 
     # Set up main window
     window = sg.Window("Welcome to Hotel JAB", layout, size=(DISPLAY_W,DISPLAY_H), finalize = True)
     graph = window["-DISPLAY-"]
     graph.draw_image(data=Logo, location=(0,350))
 
+    global userMessage
     window['-INFO-'].update(userMessage)
     
     while True:     # The Event Loop
@@ -356,22 +394,28 @@ def Main(): #Main Menu, launches all of the options
 
         # Check if any GUI elements have been interacted with
         if event == '-MENU1-':
+            currentGuest = None #resets guest information if switch user selected
             print("Clicked Menu 1")
             # A test for the login messages
             userType, userMessage = Login()
             window['-INFO-'].update(userMessage)
+
+            #Set employee funcionality to visible or hidden depending on userType
+            window['-MENU4-'].update(visible = True if userType == 'Employee' else False)
+            window['-MENU5-'].update(visible = True if userType == 'Employee' else False)
+            window['-MENU6-'].update(visible = True if userType == 'Employee' else False)
 
         if event == '-MENU2-':
             print("Clicked Menu 2")
             window['-INFO-'].update("Menu 2 Clicked")
             
             #Brings in value of currentGuest
-            global currentGuest
+            #global currentGuest
             print(f"Current Guest: {currentGuest}")
 
 
             print("Selecting room reservation")
-            r, rDateStart, rDateEnd  = SearchRooms(hotel)
+            r, rDateStart, rDateEnd  = SearchRoomsWindow()
 
             if r != 0: #If there is a room, start on reservation checks
                 roomToReserve = hotel.rooms[int(r)]
@@ -403,8 +447,27 @@ def Main(): #Main Menu, launches all of the options
             window['-INFO-'].update("Menu 4 Clicked")  
 
             # Opens a new window with interactive display for hotel rooms
-            DisplayRooms(rooms)
+            DisplayRoomsWindow(currentDate)
+
+        if event == '-MENU5-':
+            print("Clicked Menu 5")
+            window['-INFO-'].update("Menu 5 Clicked")
+
+            DisplayReservations()
+
+        if event == '-MENU6-':
+            print("Clicked Menu 6")
+            window['-INFO-'].update("Menu 6 Clicked")
+
+            DisplayGuests()
+
     window.close()
+
+
+
+
+# First start user login popup to get userType
+userType, userMessage = Login()
 
 Main()
 

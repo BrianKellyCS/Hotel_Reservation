@@ -3,6 +3,14 @@ from classes.guest import *
 from classes.room import *
 from classes.reservation import *
 
+import os
+from pathlib import Path
+CLASS_PATH = Path(__file__).parent
+DATA_PATH = Path(__file__).parents[1] / "./data/"
+
+ROOM_FILE_PATH = os.path.join(DATA_PATH,"room_data.csv")
+GUEST_FILE_PATH = os.path.join(DATA_PATH,"guest_data.csv")
+RESERVATION_FILE_PATH = os.path.join(DATA_PATH,"reservation_data.csv")
 
 class Hotel(Room,Reservation):
     def __init__(self):
@@ -11,9 +19,13 @@ class Hotel(Room,Reservation):
         self.reservations = Reservation.totalReservations #load reservations from data set
     
     def initializeHotelData(self):
-        room_data = list(csv.reader(open('data/room_data.csv')))
-        guest_data = list(csv.reader(open('data/guest_data.csv')))
-        reservation_data = list(csv.reader(open('data/reservation_data.csv')))
+#        room_data = list(csv.reader(open('data/room_data.csv')))
+#        guest_data = list(csv.reader(open('data/guest_data.csv')))
+#        reservation_data = list(csv.reader(open('data/reservation_data.csv')))
+
+        room_data = list(csv.reader(open(ROOM_FILE_PATH)))
+        guest_data = list(csv.reader(open(GUEST_FILE_PATH)))
+        reservation_data = list(csv.reader(open(RESERVATION_FILE_PATH)))
 
         for rooms in room_data:
             Room(rooms[0],rooms[1],rooms[2])

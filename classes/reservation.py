@@ -3,7 +3,10 @@ from classes.guest import *
 import csv
 from datetime import datetime
 
-
+import os
+from pathlib import Path
+DATA_PATH = Path(__file__).parents[1] / "./data/"
+RESERVATION_FILE_PATH = os.path.join(DATA_PATH,"reservation_data.csv")
 
 class Reservation(Guest):
     
@@ -34,7 +37,10 @@ class Reservation(Guest):
 
             newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
             print(f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n")
-            with open('data/reservation_data.csv', 'a',newline='') as stream:
+            #with open('data/reservation_data.csv', 'a',newline='') as stream:
+            with open(RESERVATION_FILE_PATH, 'a',newline='') as stream:
+
+
                 writer = csv.writer(stream)
                 writer.writerow(newReservation)
                 

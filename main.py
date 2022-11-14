@@ -13,6 +13,11 @@ import PySimpleGUI as sg
 from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 from classes.hotel import Hotel
 from datetime import date
+#from pathlib import Path
+#import os
+
+#MAIN_PATH = Path(__file__).parent
+#DATA_PATH = Path(__file__).parent / "./data/"
 
 DISPLAY_W, DISPLAY_H = 600,450
 BG_COLOR = "#1E90FF"
@@ -240,7 +245,6 @@ def DisplayRoomsWindow(currentDate):
                         RoomsGraph.relocate_figure(roomSquares[fullx],roomCoords[x][0],roomCoords[x][1])
                         RoomsGraph.relocate_figure(roomSquares[emptyx],roomCoords[0][0],roomCoords[0][1])
 
-
             if currentFloor == 3:
                 RoomsGraph.relocate_figure(floorplans[1],0,ROOMS_DISPLAY_H)
                 RoomsGraph.relocate_figure(floorplans[0],0,0)
@@ -265,8 +269,6 @@ def DisplayRoomsWindow(currentDate):
                         RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[x][0],roomMedCoords[x][1])
                         RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[0][0],roomMedCoords[0][1])
                         
-
-
             if currentFloor == 4:
                     currRoom = posOffset
                     fullx = 0
@@ -302,9 +304,7 @@ def DisplayRoomsWindow(currentDate):
         elif event.endswith('+UP'): 
             last_clicked = fig
             fig = None
-
-        
-        
+             
         if (last_clicked != 0 and last_clicked != None):
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 1:
                 print(hotel.getReservation(1,dateToDisplay))
@@ -334,10 +334,6 @@ def DisplayRoomsWindow(currentDate):
 
     RoomsDisplayWindow.close()
 
-
-
-
-
 def DisplayReservations():
     for res in hotel.reservations:
         print(res)
@@ -346,6 +342,44 @@ def DisplayGuests():
     for guest in hotel.guests:
         print(guest)
 
+def GenerateManagerReport():
+    print("Starting Manager Report")
+    REPORT_DISPLAY_W, REPORT_DISPLAY_H = 400, 200
+    #Get current date and extract the month number from it
+    dateToDisplay = currentDate
+    currentMonth = int(dateToDisplay[0] + dateToDisplay[1])
+
+    MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
+    YearsList = ['2022']
+    TimeList = ['Weekly','Monthly', 'Yearly']
+
+    ReportDisplay = sg.Graph(
+        canvas_size=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
+        key="-REPORTDISPLAY-",
+        background_color='#61CCF6',
+        enable_events=True)
+
+    ReportLayoutL = [
+        [sg.Text("Manager's Report", font='Default 12', size = (30,1))],
+        [sg.Text("Month", size = (6,1)), sg.Combo(MonthsList, s=(15,22), default_value = MonthsList[currentMonth-1], enable_events=True, readonly=True, k='-MONTHSELECT-'), sg.Combo(YearsList, s=(7,22), default_value = YearsList[0], enable_events=True, readonly=True, k='-YEARSELECT-')], 
+        [sg.Text("Sort by", size = (6,1)), sg.Combo(TimeList, default_value=TimeList[0], s=(10,22), enable_events=True, readonly=True, k='-TIMESELECT-'), ],  
+        [sg.Button(button_text='TEXT', key = '-DOWN-', size = (25,4), pad = 25)]
+    ]
+    ReportLayoutR =    [[ReportDisplay]]
+    ReportLayout = [[sg.Col(ReportLayoutL, p=0), sg.Col(ReportLayoutR, p=0)]]
+
+    ReportDisplayWindow = sg.Window("Manager's Report", ReportLayout, finalize = True)
+    ReportGraph = ReportDisplayWindow["-REPORTDISPLAY-"]
+    
+    while True:         # The Event Loop
+        event, values = ReportDisplayWindow.read(timeout=1)
+        
+        if event in (sg.WIN_CLOSED, 'Exit', None):
+            break
+
+       
 def Main(): #Main Menu, launches all of the options
     global userType
     currentGuest = None
@@ -375,8 +409,6 @@ def Main(): #Main Menu, launches all of the options
     layoutRight = [[Display]]
 
     layout = [[sg.Col(layoutLeft, p=0), sg.Col(layoutRight, p=0)]]
-
-
 
     # Set up main window
     window = sg.Window("Welcome to Hotel JAB", layout, size=(DISPLAY_W,DISPLAY_H), finalize = True)
@@ -460,10 +492,8 @@ def Main(): #Main Menu, launches all of the options
             window['-INFO-'].update("Menu 6 Clicked")
 
             DisplayGuests()
-
+            GenerateManagerReport()
     window.close()
-
-
 
 
 # First start user login popup to get userType

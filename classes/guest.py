@@ -1,6 +1,10 @@
 import pandas as pd
 import csv
 
+import os
+from pathlib import Path
+DATA_PATH = Path(__file__).parents[1] / "./data/"
+GUEST_FILE_PATH = os.path.join(DATA_PATH,"guest_data.csv")
 
 class Guest():
     
@@ -52,7 +56,9 @@ class Guest():
         try:
             newGuest = Guest(list[0],list[1],list[2],list[3])
             newGuest.assignGuestID(Guest.totalGuests[-2].guestID) #sends previous guests ID as parameter, new guest's ID increments by one (while ensuring not a repeat)
-            with open('data/guest_data.csv', 'a',newline='') as stream:
+##            with open('data/guest_data.csv', 'a',newline='') as stream:
+            with open(GUEST_FILE_PATH, 'a',newline='') as stream:
+
                 writer = csv.writer(stream)
                 writer.writerow(newGuest)
         except Exception as e:
@@ -64,10 +70,13 @@ class Guest():
     def setGuestStatus(self,guestStatus):
         if int(guestStatus) == 0 or int(guestStatus) == 1:
             self.guestStatus = guestStatus
-            df = pd.read_csv('data/guest_data.csv')
+##            df = pd.read_csv('data/guest_data.csv')
+            df = pd.read_csv(GUEST_FILE_PATH)
             filt = (df['guestID'] == int(self.guestID))
             df.loc[filt,'guestStatus'] = guestStatus
-            df.to_csv('data/guest_data.csv',index = False)
+##            df.to_csv('data/guest_data.csv',index = False)
+            df.to_csv(GUEST_FILE_PATH,index = False)
+
         else:
             print("\nERROR: Attempt to set Guest Status with invalid parameter.\n")
     

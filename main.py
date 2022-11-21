@@ -1,3 +1,4 @@
+
 ################################################################################################################################################################
 # Menu for Hotel Jab Project
 # Started 10.1.2022
@@ -265,8 +266,6 @@ def DisplayRoomsWindow(currentDate):
                         RoomsGraph.relocate_figure(roomMed[fullx],roomMedCoords[x][0],roomMedCoords[x][1])
                         RoomsGraph.relocate_figure(roomMed[emptyx],roomMedCoords[0][0],roomMedCoords[0][1])
                         
-
-
             if currentFloor == 4:
                     currRoom = posOffset
                     fullx = 0
@@ -302,8 +301,6 @@ def DisplayRoomsWindow(currentDate):
         elif event.endswith('+UP'): 
             last_clicked = fig
             fig = None
-
-        
         
         if (last_clicked != 0 and last_clicked != None):
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 1:
@@ -335,7 +332,108 @@ def DisplayRoomsWindow(currentDate):
     RoomsDisplayWindow.close()
 
 
+def GenerateManagerReport():
+    print("Starting Manager Report")
+    REPORT_DISPLAY_W, REPORT_DISPLAY_H = 500, 150
+    JAB_MINI_W, JAB_MINI_H = 300, 350
 
+    #Get current date and extract the month number from it
+    dateToDisplay = currentDate
+    currentMonth = int(dateToDisplay[0] + dateToDisplay[1])
+
+    MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
+    YearsList = ['2022']
+    ReportList = ['Reservations', 'Profits']
+    TimeList = ['Weekly','Monthly', 'Yearly']
+
+    TwentyEightDays = [2]
+    ThirtyDays = [4,6,9,11]
+    ThirtyOneDays = [ 1,3,5,7,8,10,12]
+
+    displayString = ""
+    for guest in hotel.guests:
+        displayString = displayString + str(guest) + "\n"
+
+    ReportDisplay = sg.Graph(
+        canvas_size=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
+        key="-REPORTDISPLAY-",
+        background_color='#61CCF6',
+        pad = (25,10),
+        enable_events=True)
+    
+    JabMiniDisplay = sg.Graph(
+        canvas_size=(JAB_MINI_W, JAB_MINI_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(JAB_MINI_W, JAB_MINI_H),
+        key="-REPORTDISPLAY-",
+        background_color='#61CCF6',
+        pad = 25,
+        enable_events=True)
+
+    GuestLayout = [[sg.T("Customer Information:", s=(50,1))],
+    #[sg.Table([["Bob","Smith",3,"111-111-1111","11/01/2022","11/02/2022"], ["555-555-5555",5,6],[],[]], ['First Name','Last Name','ID','Phone','Start','End' ], alternating_row_color="#394a6d", max_col_width = 10, num_rows=15)]
+    [sg.Multiline(default_text=displayString,size=(60,15), font='Courier 8', expand_x=True, expand_y=True, write_only=True, enable_events = True, autoscroll=True, auto_refresh=True)]
+    ]
+    WeeklyLayout = [[sg.T("Sort by Week", s=(15,1))],
+    [sg.Table([["BobBOBbobBOBbobby","SmithJohnSon",3,"111-111-1111","11/01/2022","11/02/2022"], ["555-555-5555",5,6],[],[]], ['First Name','Last Name','ID','Phone','Start','End'], justification="left", alternating_row_color="#394a6d", auto_size_columns=True, max_col_width = 14, num_rows=15)]
+
+    ]
+    MonthlyLayout = [[sg.T("Sort by Month", s=(50,1))]]
+    YearlyLayout = [[sg.T("Sort by Year", s=(15,1))]]
+
+
+    ReportLayoutL = [
+        [sg.Text("Manager's Report", font='Default 12', text_color = "white", size = (30,1))],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(20,1))],
+#        [sg.Text("Month", size = (6,1)), sg.Combo(MonthsList, s=(15,22), default_value = MonthsList[currentMonth-1], enable_events=True, readonly=True, k='-MONTHSELECT-'), sg.Combo(YearsList, s=(7,22), default_value = YearsList[0], enable_events=True, readonly=True, k='-YEARSELECT-')], 
+        [sg.Text("Sort by", size = (6,1)), sg.Combo(ReportList, default_value=ReportList[0], s=(15,22), enable_events=True, readonly=True, k='-TIMESELECT-'), ],
+        [sg.Button(button_text='Return', key = '-RETURN-', size = (10,1), pad = (125,20))],
+        [JabMiniDisplay]
+    ]
+    ReportLayoutR =    [[ReportDisplay],
+    [sg.Text('Information:',s=(15,1))], 
+#    [sg.TabGroup([[sg.Tab('Tab1',[[sg.T("Text1", s=(15,2))]]), sg.Tab('Tab2', [[sg.T("Text2", s=(15,2)) ]]) ]]) ]
+    [sg.TabGroup([[sg.Tab('Guest Information', GuestLayout, key="-GUESTTAB-" ),sg.Tab('Monthly',  MonthlyLayout ), sg.Tab('Weekly',  WeeklyLayout ),  sg.Tab('Yearly',  YearlyLayout ,visible=True,key='-YEARLYTAB-')]], size = (550,300) )]
+    ]
+
+#    print(hotel.guests[0].fName)
+
+    ReportLayout = [[sg.Col(ReportLayoutL, p=0, vertical_alignment="t"), sg.Col(ReportLayoutR, p=0, vertical_alignment="t")]]
+
+    ReportDisplayWindow = sg.Window("Manager's Report", ReportLayout, finalize = True)
+    ReportGraph = ReportDisplayWindow["-REPORTDISPLAY-"]
+
+    JabMiniImage = ReportDisplayWindow["-REPORTDISPLAY-"]
+    JabMiniImage.draw_image(data=Logo, location=(0,350))
+
+    #DisplayGuests()
+    while True:         # The Event Loop
+        event, values = ReportDisplayWindow.read(timeout=1)
+        
+        if event in (sg.WIN_CLOSED, 'Exit', '-RETURN-', None):
+            break
+
+        if (event == "-TIMESELECT-"):
+            typeChosen = values[event]
+
+            SearchList = []
+            if values['-DATE-'] != '':
+                workingDate = values['-DATE-']
+                currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
+                print(workingDate)
+                if currentMonth in ThirtyDays:
+                    print("YOUR MONTH HAS THIRTY DAYS!!!")
+                if currentMonth in ThirtyOneDays:
+                    print("Your Month has thirty ONE DAYS")
+                if currentMonth in TwentyEightDays:
+                    print("This is Februrary")
+
+    ReportDisplayWindow.close()
+#                SearchList = hotel.searchRooms(typeChosen,values['-DATE-'],values['-ENDDATE-'])
+#            SearchWindow['-SEARCH-'].update(value="None", values=SearchList)
+#            roomChosen = 0
 
 
 def DisplayReservations():
@@ -375,8 +473,6 @@ def Main(): #Main Menu, launches all of the options
     layoutRight = [[Display]]
 
     layout = [[sg.Col(layoutLeft, p=0), sg.Col(layoutRight, p=0)]]
-
-
 
     # Set up main window
     window = sg.Window("Welcome to Hotel JAB", layout, size=(DISPLAY_W,DISPLAY_H), finalize = True)
@@ -459,7 +555,8 @@ def Main(): #Main Menu, launches all of the options
             print("Clicked Menu 6")
             window['-INFO-'].update("Menu 6 Clicked")
 
-            DisplayGuests()
+            #DisplayGuests()
+            GenerateManagerReport()
 
     window.close()
 

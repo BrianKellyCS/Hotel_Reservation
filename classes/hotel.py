@@ -1,29 +1,53 @@
 import csv
-from classes.guest import *
-from classes.room import *
 from classes.reservation import *
 
+'''
 
-class Hotel(Room,Reservation):
+Date of Code: 10/10/2022
+Author: Brian Kelly
+Description: A class used to represent a Hotel. Inherits from Reservation class.
+
+Attributes:
+    rooms : list (list of Room objects from totalRooms variable in Room class)
+    guests : list (list of Guest objects from totalGuests variable in Guest class)
+    reservations : list (list of Reservation objects from totalReservation variable in Reservation class)
+
+Methods:
+    initializeHotelData() 
+        Initialize all hotel data from csv data. 
+        Opens room_data.csv, guest_data.csv and reservation_data.csv files and reads data in proper format. 
+        No return value
+
+'''
+class Hotel(Reservation):
     def __init__(self):
         self.rooms = Room.totalRooms #load rooms from data set
         self.guests = Guest.totalGuests #load customers from data set
         self.reservations = Reservation.totalReservations #load reservations from data set
     
+    #Initialize all hotel data from csv data
     def initializeHotelData(self):
         room_data = list(csv.reader(open('data/room_data.csv')))
         guest_data = list(csv.reader(open('data/guest_data.csv')))
         reservation_data = list(csv.reader(open('data/reservation_data.csv')))
 
-        for rooms in room_data:
-            Room(rooms[0],rooms[1],rooms[2])
 
-        for guests in guest_data:
-            Guest(guests[0],guests[1],guests[2],guests[3],guests[4])
+        #Bringing in data from CSV Files. index > 0 to ignore headers and bring data in correct data type
+        for index,rooms in enumerate(room_data):
+            if index > 0:
+                Room(str(rooms[0]),int(rooms[1]),int(rooms[2]))
+            else:
+                Room(rooms[0],rooms[1],rooms[2])
 
-        for idx,res in enumerate(reservation_data):
-            if idx > 0:
-                Reservation(res[0],datetime.strptime(res[1], '%m/%d/%Y'),datetime.strptime(res[2], '%m/%d/%Y'),res[3],res[4])
+        for index,guests in enumerate(guest_data):
+            if index > 0:
+                Guest(str(guests[0]),str(guests[1]),str(guests[2]),str(guests[3]),int(guests[4]))
+            else:
+                Guest(guests[0],guests[1],guests[2],guests[3],guests[4])
+
+        for index,res in enumerate(reservation_data):
+            if index > 0:
+                Reservation(int(res[0]),datetime.strptime(res[1], '%m/%d/%Y'),datetime.strptime(res[2], '%m/%d/%Y'),int(res[3]),int(res[4]))
             else:
                 Reservation(res[0],res[1],res[2],res[3],res[4])
 
@@ -34,30 +58,6 @@ class Hotel(Room,Reservation):
 
 
 
-
-'''#Basic Functionality
-
-
-hotel = Hotel()
-hotel.initializeHotelData() #fetch data from csv files
-
-currentGuest = hotel.guests[-1] #assign a guest from guest data (-1 index is the last guest in list)
-
-hotel.searchRooms("Basic") #Will be buttons in GUI , not entered text
-roomToReserve = hotel.rooms[1] #Button in GUI to reserve the room selected
-
-#parameters for createReservation (guestID, startDate, endDate, roomNumber)
-hotel.createReservation(currentGuest.guestID,"10/10/2020","10/13/2020",roomToReserve.roomNumber) 
-
-#example creating guest from guest form
-list = ["Bob", "job", "555-5555", "bobjob@yahoo.com"] #Comes from Guest Form
-currentGuest = hotel.createGuest(list)
-print(currentGuest) #or print(hotel.guests[-1]) 
-
-#get guest by ID
-print(hotel.returnGuestByID(17)) #returns Bob job
-
-print(hotel.reservations[-1]) #prints latest reservation created''' 
 
 
 

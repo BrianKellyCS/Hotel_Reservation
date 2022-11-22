@@ -1,8 +1,46 @@
 import pandas as pd
 from datetime import datetime
-import PySimpleGUI as sg
-from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 
+'''
+
+Date of Code: 10/10/2022
+Authors: Brian Kelly, Jesse Carrillo
+Description: A class used to represent a room.
+
+Class Variables: 
+    totalRooms: list (contains list of all rooms)
+    roomChoices : list (contains list of different room types in hotel: Basic, Deluxe, Suite) 
+
+Attributes:
+    roomType: str  (Type of room)
+    roomNumber: int (Room number)
+    roomPrice: int (Cost of room)
+
+Methods:
+    getRoom(roomNumber : int) 
+        Searches totalRooms list and Returns Room object
+
+    searchRooms(roomType : str, startDate : datetime, endDate : datetime) 
+        Searches room by room type with selected date range. 
+        Returns a list of room numbers that are available within the start and end date
+
+    isAvailableRoom(roomNumber : int, *args : datetime (1 or 2 dates)) 
+        Checks availability for room number based on date(s) in parameter.
+        Calls helper function checkDate() if one date is sent as parameter. checkDate returns a bool value
+        Calls helper function checkDateRange() if a start and end date are sent as parameters. checkDateRange returns a bool value
+        Method returns a boolean value of True or False depending on if the room is available or not.
+
+    checkDate(roomNumber : int, date : datetime)
+        Helper function for isAvailableRoom
+        Searches reservations for availability by room number with selected date
+        Returns bool value. True if room is available on the date. False if not
+
+    checkDateRange(roomNumber: int, startDate : datetime, endDate : datetime)
+        Helper function for isAvailableRoom
+        Searches reservations for availability by room number with date range
+        Returns bool value. True if room is available in date range, False if not.
+
+'''
 class Room:
     
     #Class variables
@@ -19,14 +57,14 @@ class Room:
     def __str__(self):
         return f"Room #: {self.roomNumber} // Room Type: {self.roomType} // Room Price: {self.roomPrice}"
     
-    
+    #Returns room
     def getRoom(self,roomNumber):
         for idx in Room.totalRooms:
-            if str(roomNumber) == str(idx.roomNumber):
+            if roomNumber == idx.roomNumber:
                 return idx
         return f'Room {roomNumber} not found'
 
-    
+    #Searches rooms by room type with selected date range
     def searchRooms(self, roomType,startDate,endDate):
         roomList = []
         startDate = datetime.strptime(startDate, '%m/%d/%Y')
@@ -40,65 +78,24 @@ class Room:
 
             return roomList
 
-    #Handles dates with *args, so function can be used for variable number of arguments:  2  for search rooms (start Date, endDate) and 1 for display rooms (date)
+    #Checks availability for room number based off date selected
+    #Handles dates with *args, so function can be used for a single date or date range
     def isAvailableRoom(self,roomNumber,*args):
-        isAvailable = True
-        if len(args) == 2:
-            startDate = args[0]
-            endDate = args[1]
 
-            if type(startDate) == str:
-                startDate = datetime.strptime(startDate, '%m/%d/%Y')
-                endDate = datetime.strptime(endDate, '%m/%d/%Y')
+        if len(args) == 1:
+            return self.checkDate(roomNumber,args[0])
 
+        elif len(args) == 2:
+             return self.checkDateRange(roomNumber,args[0],args[1])           
 
-            #Removes rooms with conflicting reservations
-            for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
-                #Try block ensures that the dates being compared are dateTime
-                try:
-                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
-                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
-                except:
-                    resStart = res.startDate
-                    resEnd = res.endDate
-                if str(res.roomNumber) == str(roomNumber):
-                    if (startDate < resStart and endDate <= resStart) or (startDate >= resEnd and endDate > resEnd):
-                        continue
-                    else:
-                        isAvailable = False
-                        return isAvailable
-            return isAvailable
-        elif len(args) == 1:
-            date = args[0]
+    #Helper function for isAvailableRoom
+    #Searches reservations for availability by room number with selected date
+    def checkDate(self,roomNumber,date):
 
-            if type(date) == str:
-                date = datetime.strptime(date, '%m/%d/%Y')
+        if type(date) == str:
+            date = datetime.strptime(date, '%m/%d/%Y')
 
-            #Removes rooms with conflicting reservations
-            for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
-                #Try block ensures that the dates being compared are dateTime
-                try:
-                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
-                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
-                except:
-                    resStart = res.startDate
-                    resEnd = res.endDate
-                if str(res.roomNumber) == str(roomNumber):
-                    if (date < resStart) or (date >= resEnd):
-                        isAvailable = True
-                    else:
-                        isAvailable = False
-                        return isAvailable
-            return isAvailable
-
-    
-
-    
-        '''def filterByDates(self,roomList,startDate,endDate):
-
-        #Removes rooms with conflicting reservations
-        for idx,res in enumerate(self.totalReservations[1:]): #starting at index 1 (index 0 is header)
-            
+        for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
             #Try block ensures that the dates being compared are dateTime
             try:
                 resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
@@ -106,12 +103,36 @@ class Room:
             except:
                 resStart = res.startDate
                 resEnd = res.endDate
-            if (startDate < resStart and endDate <= resStart) or (startDate >= resEnd and endDate > resEnd):
-                print('Room: ',res.roomNumber, 'Res #: ',res.reservationNumber,' kept')
-            else:
-                try:
-                    roomList.remove(res.roomNumber)
-                except Exception as e:
-                    pass
-        return roomList'''
+            if str(res.roomNumber) == str(roomNumber):
+                if (date < resStart) or (date >= resEnd):
+                    continue
+                else:
+                    return False
+        return True
+
+
+    #Helper function for isAvailableRoom
+    #Searches reservations for availability by room number with date range
+    def checkDateRange(self,roomNumber,startDate,endDate):
+
+        if type(startDate) == str:
+            startDate = datetime.strptime(startDate, '%m/%d/%Y')
+            endDate = datetime.strptime(endDate, '%m/%d/%Y')
+
+
+        for res in self.totalReservations[1:]: #starting at index 1 (index 0 is header)
+            #Try block ensures that the dates being compared are dateTime
+            try:
+                resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
+                resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
+            except:
+                resStart = res.startDate
+                resEnd = res.endDate
+            if str(res.roomNumber) == str(roomNumber):
+                if (startDate < resStart and endDate <= resStart) or (startDate >= resEnd and endDate > resEnd):
+                    continue
+                else:
+                    return False
+        return True
+
 

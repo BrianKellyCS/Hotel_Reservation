@@ -1,19 +1,19 @@
 
-################################################################################################################################################################
-# Menu for Hotel Jab Project
-# Started 10.1.2022
+#################################################################################################################################
+# Hotel Reservation Project
+#  Project by:
+#  Jesse Carrillo
+#  Brian Kelly
+#  Anthony Rosas
+#  Started 10.1.2022
 #
-# This is the main menu/ GUI for the Hotel Project. From here we will be able to manage the Guests or look up information or save/load information
-################################################################################################################################################################
-# TODO:
-#       * Everything is a wip so far, please ignore any bugs
-#       SPRINT 1: https://docs.google.com/document/d/1rrxGAHb_uLp-nZpFUXGhp3va9taUg57OEAkbsngGYAs/
-#
-###############################################################################
+# This is the main menu and GUI for the Hotel Project. From here we will be able to manage the Guests and Reservations visually
+#################################################################################################################################
 import PySimpleGUI as sg
 from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 from classes.hotel import Hotel
 from datetime import date
+import pydoc
 
 DISPLAY_W, DISPLAY_H = 600,450
 BG_COLOR = "#1E90FF"
@@ -27,8 +27,8 @@ hotel.initializeHotelData()
 rooms = hotel.rooms
 currentDate = date.today().strftime("%m/%d/%Y") #for default date to pass to function
 
-
-def Login(): #Login Screen to choose which experience to view, returns a string saying what was chosen and a welcome message
+def Login(): 
+    '''Login Screen to choose which experience to view, returns a str for user type ("Guest" or "Employee") and a string for a customized welcome message. Defaults to "Guest" if nothing is chosen.'''
     login = [[sg.Button(button_text='EMPLOYEE', key = '-EMPLOYEE-', size = (25,5),p=(100,50))],[sg.Button(button_text='GUEST', key = '-GUEST-', size = (25,5), p=(100,5))]]
     loginWindow = sg.Window("Login Screen", login, size=(400,400), finalize=True)
 
@@ -59,7 +59,8 @@ def Login(): #Login Screen to choose which experience to view, returns a string 
             loginWindow.close()
             return userType, userStatus
 
-def InformationForm(): # Will let the user input their information
+def InformationForm(): 
+    '''A form that lets the user input their information. If submit is pressed it will return four strings: First name, Last name, Phone Number and Email as typed in the form. If the form is not filled out or closed it will return None'''
     FormLayout = [
         [sg.Text('Please enter reservation information: ')],
         [sg.Text('First Name', size =(15, 1)), sg.InputText(), sg.Text('Last Name', size =(15, 1), justification='Left'), sg.InputText()],
@@ -83,6 +84,7 @@ def InformationForm(): # Will let the user input their information
 
 
 def SearchRoomsWindow():
+    '''Opens a new window where the user can select a reservation start date, an end date and a room type and recieve a list of available rooms to reserve. Returns an int for the chosen room number, a string for the reservation start date ("MM/DD/YYYY") and a string for the reservation end date ("MM/DD"YYYY") when submit is pressed and the reservation is valid.'''
     SEARCH_CANVAS_W, SEARCH_CANVAS_H = 300,350
     
     RoomTypeList = ["Basic", "Deluxe", "Suite"]
@@ -131,6 +133,7 @@ def SearchRoomsWindow():
 
    
 def DisplayRoomsWindow(currentDate):
+    '''Opens a new window that visually shows a floor by floor layout of the hotel and which rooms are available to reserve on a chosen date. After selecting a date and pressing submit the display will update and display the available rooms in green and the taken rooms in red. currentDate is used to start the calendar element on the correct day.'''
     dateToDisplay = currentDate
     print("Displaying Room List")
     # Size of room display and the floors of the hotel display
@@ -333,6 +336,7 @@ def DisplayRoomsWindow(currentDate):
 
 
 def GenerateManagerReport():
+    '''Opens a new window that visually compiles the guest and reservation data into a more human readable format. The data is loaded in from the database and is sorted and displayed based on the chosen date and method by the user.'''
     print("Starting Manager Report")
     REPORT_DISPLAY_W, REPORT_DISPLAY_H = 500, 150
     JAB_MINI_W, JAB_MINI_H = 300, 350
@@ -349,10 +353,23 @@ def GenerateManagerReport():
     TwentyEightDays = [2]
     ThirtyDays = [4,6,9,11]
     ThirtyOneDays = [ 1,3,5,7,8,10,12]
+    
+    reservationList = []
 
-    displayString = ""
+    guestsList = []
+    guestCount = 0
+
     for guest in hotel.guests:
-        displayString = displayString + str(guest) + "\n"
+        if guestCount >= 1:
+            tempGuest = []
+            tempGuest.append(guest.fName)
+            tempGuest.append(guest.lName)
+            tempGuest.append(guest.guestID)
+            tempGuest.append(guest.phone)
+            tempGuest.append(guest.email)
+            
+            guestsList.append(tempGuest)
+        guestCount = guestCount + 1
 
     ReportDisplay = sg.Graph(
         canvas_size=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
@@ -372,22 +389,23 @@ def GenerateManagerReport():
         pad = 25,
         enable_events=True)
 
-    GuestLayout = [[sg.T("Customer Information:", s=(50,1))],
-    #[sg.Table([["Bob","Smith",3,"111-111-1111","11/01/2022","11/02/2022"], ["555-555-5555",5,6],[],[]], ['First Name','Last Name','ID','Phone','Start','End' ], alternating_row_color="#394a6d", max_col_width = 10, num_rows=15)]
-    [sg.Multiline(default_text=displayString,size=(60,15), font='Courier 8', expand_x=True, expand_y=True, write_only=True, enable_events = True, autoscroll=True, auto_refresh=True)]
+    GuestLayout = [[sg.T("Guest Information (" + str(len(guestsList)) + " Total):", s=(50,1))],
+     [sg.Table(guestsList, ['First Name','Last Name','ID','Phone','Email'], justification="left", alternating_row_color="#394a6d", auto_size_columns= False, num_rows=15, col_widths = (12,12,4,10,21))] #True, num_rows=15, max_col_width = 19)] 
     ]
     WeeklyLayout = [[sg.T("Sort by Week", s=(15,1))],
-    [sg.Table([["BobBOBbobBOBbobby","SmithJohnSon",3,"111-111-1111","11/01/2022","11/02/2022"], ["555-555-5555",5,6],[],[]], ['First Name','Last Name','ID','Phone','Start','End'], justification="left", alternating_row_color="#394a6d", auto_size_columns=True, max_col_width = 14, num_rows=15)]
-
+    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-WEEKLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
     ]
-    MonthlyLayout = [[sg.T("Sort by Month", s=(50,1))]]
-    YearlyLayout = [[sg.T("Sort by Year", s=(15,1))]]
 
+    MonthlyLayout = [[sg.T("Sort by Month", s=(50,1))],
+    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-MONTHLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
+    ]
+    YearlyLayout = [[sg.T("Sort by Year", s=(15,1))],
+    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-YEARLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
+]
 
     ReportLayoutL = [
         [sg.Text("Manager's Report", font='Default 12', text_color = "white", size = (30,1))],
         [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(20,1))],
-#        [sg.Text("Month", size = (6,1)), sg.Combo(MonthsList, s=(15,22), default_value = MonthsList[currentMonth-1], enable_events=True, readonly=True, k='-MONTHSELECT-'), sg.Combo(YearsList, s=(7,22), default_value = YearsList[0], enable_events=True, readonly=True, k='-YEARSELECT-')], 
         [sg.Text("Sort by", size = (6,1)), sg.Combo(ReportList, default_value=ReportList[0], s=(15,22), enable_events=True, readonly=True, k='-TIMESELECT-'), ],
         [sg.Button(button_text='Return', key = '-RETURN-', size = (10,1), pad = (125,20))],
         [JabMiniDisplay]
@@ -398,8 +416,6 @@ def GenerateManagerReport():
     [sg.TabGroup([[sg.Tab('Guest Information', GuestLayout, key="-GUESTTAB-" ),sg.Tab('Monthly',  MonthlyLayout ), sg.Tab('Weekly',  WeeklyLayout ),  sg.Tab('Yearly',  YearlyLayout ,visible=True,key='-YEARLYTAB-')]], size = (550,300) )]
     ]
 
-#    print(hotel.guests[0].fName)
-
     ReportLayout = [[sg.Col(ReportLayoutL, p=0, vertical_alignment="t"), sg.Col(ReportLayoutR, p=0, vertical_alignment="t")]]
 
     ReportDisplayWindow = sg.Window("Manager's Report", ReportLayout, finalize = True)
@@ -408,7 +424,6 @@ def GenerateManagerReport():
     JabMiniImage = ReportDisplayWindow["-REPORTDISPLAY-"]
     JabMiniImage.draw_image(data=Logo, location=(0,350))
 
-    #DisplayGuests()
     while True:         # The Event Loop
         event, values = ReportDisplayWindow.read(timeout=1)
         
@@ -418,12 +433,20 @@ def GenerateManagerReport():
         if (event == "-TIMESELECT-"):
             typeChosen = values[event]
 
-            SearchList = []
             if values['-DATE-'] != '':
                 workingDate = values['-DATE-']
                 currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
                 print(workingDate)
-                if currentMonth in ThirtyDays:
+                reservationList = []
+
+                if currentMonth in ThirtyDays: #Month has 30 days
+
+                    if typeChosen == "Reservations":
+                        reservationList.append(["FIRSTNAME","LASTNAME",0,"00/00/2022","00/01/2022"])
+                    if typeChosen == "Profits":
+                        reservationList.append(["Profits!!!","A lot!!!",1,"---","---"])
+
+                    ReportDisplayWindow['-WEEKLYTABLE-'].update(values=reservationList)
                     print("YOUR MONTH HAS THIRTY DAYS!!!")
                 if currentMonth in ThirtyOneDays:
                     print("Your Month has thirty ONE DAYS")
@@ -431,20 +454,20 @@ def GenerateManagerReport():
                     print("This is Februrary")
 
     ReportDisplayWindow.close()
-#                SearchList = hotel.searchRooms(typeChosen,values['-DATE-'],values['-ENDDATE-'])
-#            SearchWindow['-SEARCH-'].update(value="None", values=SearchList)
-#            roomChosen = 0
-
 
 def DisplayReservations():
+    '''Formats all of the reservation data for readability and displays in the terminal. Used for debugging purposes.'''
     for res in hotel.reservations:
         print(res)
 
 def DisplayGuests():
+    '''Formats all of the guest data for readability and prints it in the terminal. Used for debugging purposes.'''
+
     for guest in hotel.guests:
         print(guest)
 
 def Main(): #Main Menu, launches all of the options
+    '''Main function that drives the GUI and program. On start will prompt the user to login and will adjust the display based on wheter the user is a "Guest" or "Employee." The guest display is simpler, only allowing to login again, input user information and make a reservation. The employee display allows also adds the ability to visually search the rooms, check reservations made and access the manager's report. If this is closed the program will close.'''
     global userType
     currentGuest = None
     DISPLAY_CANVAS_W, DISPLAY_CANVAS_H = 300,350

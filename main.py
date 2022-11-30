@@ -431,7 +431,7 @@ def GenerateManagerReport():
     ]
 
     ProfitLayout = [[sg.T("Profit Summary:", s=(30,1))],
-    [sg.Table(profitList, ['Name','ID','Start','End','Total'], key ='-PROFITSTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (30,4,9,9,7), num_rows=15)]#max_col_width = 25, num_rows=15)]
+    [sg.Table(profitList, ['Name','ID','Start','End','Total'], key ='-PROFITSTABLE-', justification="center", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (30,4,9,9,7), num_rows=15)]#max_col_width = 25, num_rows=15)]
     ]
 
     ReportLayoutL = [
@@ -484,36 +484,92 @@ def GenerateManagerReport():
                 if typeChosen == "Monthly":
                     sortEnds = []
                     sortStarts = []
+                    profitEnds = []
+                    profitStarts = []
+                    totalProfit = 0
 
-                    # Sorted Reservation List
+                    # Prep the final sorted lists for data
                     sortedReservationList.append(["Reservations for month of ", ""+ MonthsList[currentMonth-1] ,"" + str(currentYear)])
+                    profitList.append(["Profits for month of " + MonthsList[currentMonth-1]+" "+ str(currentYear)])
+
                     for reservations in reservationList:
                         startYear = int(reservations[4][0:4]) #Set Year
                         endYear = int(reservations[5][0:4])
+                        profitWrite = False
 
                         if (startYear == currentYear or endYear == currentYear):
                             startMonth = int(reservations[4][5:7]) #Set Month
                             endMonth = int(reservations[5][5:7])
 
+                            startDay = int(reservations[4][8:10]) #Set Day
+                            endDay = int(reservations[5][8:10])
+                            roomNum = reservations[3]
+
                             if ((endMonth == currentMonth) and (endMonth != startMonth)): # Reservation ends in month
+                                # Adds the reservations ending in the month to a list to be sorted
                                 sortEnds.append(reservations)
                                 
-                            if startMonth == currentMonth: # Reservation is in current month
+                                # Extracts the room price and nights stayed to get total for room
+                                roomProfit = rooms[roomNum].roomPrice * endDay
+
+                                # Formatted list that will show profits for each reservation
+                                tempProfitList = []
+                                tempProfitList.append(reservations[0])
+                                tempProfitList.append(reservations[1])
+                                tempProfitList.append(reservations[4])
+                                tempProfitList.append(reservations[5])
+                                tempProfitList.append(roomProfit)
+                                totalProfit = totalProfit + roomProfit
+
+                                profitEnds.append(tempProfitList)
+                                
+                            if ((startMonth == currentMonth)and (endMonth == currentMonth)): # Reservation is in current month
                                 sortStarts.append(reservations)
 
-                    # Sort the lists depending on what is being used
-                    Sort(sortEnds,5) 
-                    Sort(sortStarts,4)
+                                daysStayed = (endDay - startDay + 1)
+                                roomProfit = rooms[roomNum].roomPrice * daysStayed
 
-                    # Append the final lists in order to the displayed list
+                                profitWrite = True
+
+
+                            if ((startMonth == currentMonth)and (endMonth != currentMonth)): # Reservation is in current month
+                                sortStarts.append(reservations)
+
+                                daysStayed = (days - startDay + 1)
+                                roomProfit = rooms[roomNum].roomPrice * daysStayed
+                                
+                                profitWrite = True
+
+                            if profitWrite == True:
+                                # Formatted list that will show profits for each reservation
+                                tempProfitList = []
+                                tempProfitList.append(reservations[0])
+                                tempProfitList.append(reservations[1])
+                                tempProfitList.append(reservations[4])
+                                tempProfitList.append(reservations[5])
+                                tempProfitList.append(roomProfit)
+
+                                profitStarts.append(tempProfitList)
+                                totalProfit = totalProfit + roomProfit
+
+                    # Sort the lists depending on what is being used
+                    Sort(sortEnds,5)
+                    Sort(profitEnds,4)
+
+                    Sort(sortStarts,4)
+                    Sort(profitStarts,3)
+
+                    # Append the final sorted lists in order to the displayed list
                     for x in sortEnds:
                         sortedReservationList.append(x)
                     for y in sortStarts:
                         sortedReservationList.append(y)
 
-                    # Profits Monthly
-                    profitList.append(["Profits for month of " + MonthsList[currentMonth-1]+" "+ str(currentYear)])
- 
+                    for x in profitEnds:
+                        profitList.append(x)
+                    for y in profitStarts:
+                        profitList.append(y)
+                    profitList.append(["Total for Month: $" + str(totalProfit)])
 
                 if typeChosen == "Weekly":
                     #Sorted Reservation List
@@ -529,14 +585,84 @@ def GenerateManagerReport():
 
 
                 if typeChosen == "Yearly":
-                    sortedReservationList.append(["Reservations for Year of " + str(currentYear)])
+                    sortEnds = []
+                    sortStarts = []
 
-                    for x in MonthsList:
-                        #Sorted Reservatin List
-                        sortedReservationList.append([x])
+                    profitEnds = []
+                    profitStarts = []
+                    totalProfit = 0
 
-                        #Profits Yearly
-                        profitList.append([x])
+                    # Prep the final sorted lists for data
+                    sortedReservationList.append(["Reservations for Year ", str(currentYear)])
+                    profitList.append(["Profits for Year " + str(currentYear)])
+
+                    for reservations in reservationList:
+                        startYear = int(reservations[4][0:4]) #Set Year
+                        endYear = int(reservations[5][0:4])
+
+                        endDay = int(reservations[5][8:10])
+                        startDay = int(reservations[4][8:10]) #Set Day
+                            
+                        roomNum = reservations[3]
+
+                        if ((startYear != currentYear) and (endYear == currentYear)): #Started in a previous year
+                            print("This entry started in previous year")
+                            sortEnds.append(reservations)
+                            roomProfit = rooms[roomNum].roomPrice * endDay # Assumes that they are ending the first month of the year!
+
+                            # Formatted list that will show profits for each reservation
+                            tempProfitList = []
+                            tempProfitList.append(reservations[0])
+                            tempProfitList.append(reservations[1])
+                            tempProfitList.append(reservations[4])
+                            tempProfitList.append(reservations[5])
+                            tempProfitList.append(roomProfit)
+                            totalProfit = totalProfit + roomProfit
+
+                            profitEnds.append(tempProfitList)
+                            
+                        if ((startYear == currentYear)):# and (endYear == currentYear)): # Reservation is all in current year
+                            print("This entry is all in the current year")
+                            sortStarts.append(reservations)
+
+                            # Checks if the reservation goes into another month
+                            if startDay <= endDay:
+                                daysStayed = (endDay - startDay + 1)
+                            if ((endDay < startDay) and (endYear == currentYear)):
+                                daysStayed = (days - startDay + 1) + endDay # days in month + days in other month    
+                            if ((endDay < startDay) and (endYear != currentYear)):
+                                daysStayed = (days - startDay + 1)
+                                if daysStayed <= 0: daysStayed = 1 #Quick bugfix for smaller months
+                            roomProfit = rooms[roomNum].roomPrice * daysStayed
+
+                            tempProfitList = []
+                            tempProfitList.append(reservations[0])
+                            tempProfitList.append(reservations[1])
+                            tempProfitList.append(reservations[4])
+                            tempProfitList.append(reservations[5])
+                            tempProfitList.append(roomProfit)
+
+                            profitStarts.append(tempProfitList)
+                            totalProfit = totalProfit + roomProfit
+
+                    # Sort the lists depending on what is being used
+                    Sort(sortEnds,5)
+                    Sort(profitEnds,4)
+
+                    Sort(sortStarts,4)
+                    Sort(profitStarts,3)
+
+                    # Append the final sorted lists in order to the displayed list
+                    for x in sortEnds:
+                        sortedReservationList.append(x)
+                    for y in sortStarts:
+                        sortedReservationList.append(y)
+
+                    for x in profitEnds:
+                        profitList.append(x)
+                    for y in profitStarts:
+                        profitList.append(y)
+                    profitList.append(["Total for Year: $" + str(totalProfit)])
                 
                 # Update the table displays to show new sorted data
                 ReportDisplayWindow['-SORTEDTABLE-'].update(values=sortedReservationList)

@@ -334,6 +334,13 @@ def DisplayRoomsWindow(currentDate):
 
     RoomsDisplayWindow.close()
 
+# Modified list sort method, original by GeeksforGeeks: https://www.geeksforgeeks.org/python-sort-list-according-second-element-sublist/
+def Sort(sub_li, location):
+    # reverse = None (Sorts in Ascending order)
+    # key is set to sort using second element of 
+    # sublist lambda has been used
+    sub_li.sort(key = lambda x: x[location])
+    return sub_li
 
 def GenerateManagerReport():
     '''Opens a new window that visually compiles the guest and reservation data into a more human readable format. The data is loaded in from the database and is sorted and displayed based on the chosen date and method by the user.'''
@@ -341,36 +348,7 @@ def GenerateManagerReport():
     REPORT_DISPLAY_W, REPORT_DISPLAY_H = 500, 150
     JAB_MINI_W, JAB_MINI_H = 300, 350
 
-    #Get current date and extract the month number from it
-    dateToDisplay = currentDate
-    currentMonth = int(dateToDisplay[0] + dateToDisplay[1])
-
-    MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
-    YearsList = ['2022']
-    ReportList = ['Reservations', 'Profits']
-    TimeList = ['Weekly','Monthly', 'Yearly']
-
-    TwentyEightDays = [2]
-    ThirtyDays = [4,6,9,11]
-    ThirtyOneDays = [ 1,3,5,7,8,10,12]
-    
-    reservationList = []
-
-    guestsList = []
-    guestCount = 0
-
-    for guest in hotel.guests:
-        if guestCount >= 1:
-            tempGuest = []
-            tempGuest.append(guest.fName)
-            tempGuest.append(guest.lName)
-            tempGuest.append(guest.guestID)
-            tempGuest.append(guest.phone)
-            tempGuest.append(guest.email)
-            
-            guestsList.append(tempGuest)
-        guestCount = guestCount + 1
-
+    # Displays for images and graphs
     ReportDisplay = sg.Graph(
         canvas_size=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
         graph_bottom_left=(0, 0),
@@ -389,31 +367,84 @@ def GenerateManagerReport():
         pad = 25,
         enable_events=True)
 
+    #Get current date and extract the month number from it as default
+    dateToDisplay = currentDate
+    currentMonth = int(dateToDisplay[0] + dateToDisplay[1])
+
+    MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
+    YearsList = ['2022']
+    TimeList = ['Monthly', 'Yearly','Weekly']
+
+    TwentyEightDays = [2]
+    ThirtyDays = [4,6,9,11]
+    ThirtyOneDays = [ 1,3,5,7,8,10,12]
+
+    # Load Guest data as it will display in the report
+    guestsList = []
+    guestCount = 0
+
+    for guest in hotel.guests:
+        if guestCount >= 1:
+            tempGuest = []
+            tempGuest.append(guest.fName)
+            tempGuest.append(guest.lName)
+            tempGuest.append(guest.guestID)
+            tempGuest.append(guest.phone)
+            tempGuest.append(guest.email)
+            
+            guestsList.append(tempGuest)
+        guestCount = guestCount + 1
+
+    # Load Reservation data formatted to read better in report
+    reservationList = []
+    reservationCount = 0
+
+    for reservation in hotel.reservations:
+        if reservationCount >= 1:
+            tempReservation = [] # Formats data to be more readable
+            tempReservation.append(guestsList[int(reservation.guestID)-1][1]) #gets guest name from the ID number
+            tempReservation.append(reservation.guestID)
+            tempReservation.append(reservation.reservationNumber)
+            tempReservation.append(reservation.roomNumber)
+            # Only the dates, no timestamps
+            tempReservation.append(str(reservation.startDate)[0:10])
+            tempReservation.append(str(reservation.endDate)[0:10])
+
+            reservationList.append(tempReservation)
+        reservationCount = reservationCount + 1
+    
+    # Empty lists, will hold sorted data
+    sortedReservationList = []
+    profitList = []
+
     GuestLayout = [[sg.T("Guest Information (" + str(len(guestsList)) + " Total):", s=(50,1))],
      [sg.Table(guestsList, ['First Name','Last Name','ID','Phone','Email'], justification="left", alternating_row_color="#394a6d", auto_size_columns= False, num_rows=15, col_widths = (12,12,4,10,21))] #True, num_rows=15, max_col_width = 19)] 
     ]
-    WeeklyLayout = [[sg.T("Sort by Week", s=(15,1))],
-    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-WEEKLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
+
+    ReservationLayout = [[sg.T("All Reservations (" + str(len(reservationList)) + " Total):", s=(30,1))],
+    [sg.Table(reservationList, ['Surname','Guest ID','Reservation #','Room #','Start','End'], key ='-RESERVATIONTABLE-', justification="center", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (16,8,8,8,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
     ]
 
-    MonthlyLayout = [[sg.T("Sort by Month", s=(50,1))],
-    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-MONTHLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
+    SortedReservationsLayout = [[sg.T("Sorted Results:", s=(30,1))],
+    [sg.Table(sortedReservationList, ['Surname','Guest ID','Reservation #','Room #','Start','End'], key ='-SORTEDTABLE-', justification="center", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (16,8,8,8,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
+    #[sg.Table(sortedReservationList, ['Name','ID','Start','End','Total'], key ='-SORTEDTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (30,4,9,9,7), num_rows=15)]#max_col_width = 25, num_rows=15)]
     ]
-    YearlyLayout = [[sg.T("Sort by Year", s=(15,1))],
-    [sg.Table(reservationList, ['First Name','Last Name','ID','Start','End'], key ='-YEARLYTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (18,18,4,9,10), num_rows=15)]#max_col_width = 25, num_rows=15)]
-]
+
+    ProfitLayout = [[sg.T("Profit Summary:", s=(30,1))],
+    [sg.Table(profitList, ['Name','ID','Start','End','Total'], key ='-PROFITSTABLE-', justification="left", alternating_row_color="#394a6d", auto_size_columns=False, col_widths = (30,4,9,9,7), num_rows=15)]#max_col_width = 25, num_rows=15)]
+    ]
 
     ReportLayoutL = [
         [sg.Text("Manager's Report", font='Default 12', text_color = "white", size = (30,1))],
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(20,1))],
-        [sg.Text("Sort by", size = (6,1)), sg.Combo(ReportList, default_value=ReportList[0], s=(15,22), enable_events=True, readonly=True, k='-TIMESELECT-'), ],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y',title="Select Date"), sg.Input(key='-DATE-', size=(20,1))],
+        [sg.Text("Sort by", size = (6,1)), sg.Combo(TimeList, default_value=TimeList[0], s=(15,22), enable_events=True, readonly=True, k='-TIMESELECT-'), sg.Button(button_text='Submit', key = '-TIMESUBMIT-', size = (6,1))],
         [sg.Button(button_text='Return', key = '-RETURN-', size = (10,1), pad = (125,20))],
         [JabMiniDisplay]
     ]
+
     ReportLayoutR =    [[ReportDisplay],
     [sg.Text('Information:',s=(15,1))], 
-#    [sg.TabGroup([[sg.Tab('Tab1',[[sg.T("Text1", s=(15,2))]]), sg.Tab('Tab2', [[sg.T("Text2", s=(15,2)) ]]) ]]) ]
-    [sg.TabGroup([[sg.Tab('Guest Information', GuestLayout, key="-GUESTTAB-" ),sg.Tab('Monthly',  MonthlyLayout ), sg.Tab('Weekly',  WeeklyLayout ),  sg.Tab('Yearly',  YearlyLayout ,visible=True,key='-YEARLYTAB-')]], size = (550,300) )]
+    [sg.TabGroup([[sg.Tab('Guest Information', GuestLayout, key="-GUESTTAB-" ), sg.Tab('All Reservations', ReservationLayout, key = "-RESERVATIONTAB-" ), sg.Tab('Reservations (Sorted)',  SortedReservationsLayout, key = "-SORTEDTAB-" ), sg.Tab('Profits',  ProfitLayout ,visible=True,key='-PROFITSTAB-')]], size = (550,300), enable_events=True )]
     ]
 
     ReportLayout = [[sg.Col(ReportLayoutL, p=0, vertical_alignment="t"), sg.Col(ReportLayoutR, p=0, vertical_alignment="t")]]
@@ -430,28 +461,86 @@ def GenerateManagerReport():
         if event in (sg.WIN_CLOSED, 'Exit', '-RETURN-', None):
             break
 
-        if (event == "-TIMESELECT-"):
-            typeChosen = values[event]
+        if (event == "-TIMESUBMIT-"):
+            # If a date is chosen and the submit button is pressed, get sort type
+            typeChosen = values["-TIMESELECT-"]
 
             if values['-DATE-'] != '':
+                # Initialize values+tables and get working date information from selected date
                 workingDate = values['-DATE-']
                 currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
-                print(workingDate)
-                reservationList = []
+                currentYear = int(values['-DATE-'][6:10])
 
-                if currentMonth in ThirtyDays: #Month has 30 days
+                sortedReservationList = []
+                profitList = []
 
-                    if typeChosen == "Reservations":
-                        reservationList.append(["FIRSTNAME","LASTNAME",0,"00/00/2022","00/01/2022"])
-                    if typeChosen == "Profits":
-                        reservationList.append(["Profits!!!","A lot!!!",1,"---","---"])
-
-                    ReportDisplayWindow['-WEEKLYTABLE-'].update(values=reservationList)
-                    print("YOUR MONTH HAS THIRTY DAYS!!!")
+                if currentMonth in ThirtyDays: #Set max days for months
+                    days = 30
                 if currentMonth in ThirtyOneDays:
-                    print("Your Month has thirty ONE DAYS")
+                    days = 31
                 if currentMonth in TwentyEightDays:
-                    print("This is Februrary")
+                    days = 28
+
+                if typeChosen == "Monthly":
+                    sortEnds = []
+                    sortStarts = []
+
+                    # Sorted Reservation List
+                    sortedReservationList.append(["Reservations for month of ", ""+ MonthsList[currentMonth-1] ,"" + str(currentYear)])
+                    for reservations in reservationList:
+                        startYear = int(reservations[4][0:4]) #Set Year
+                        endYear = int(reservations[5][0:4])
+
+                        if (startYear == currentYear or endYear == currentYear):
+                            startMonth = int(reservations[4][5:7]) #Set Month
+                            endMonth = int(reservations[5][5:7])
+
+                            if ((endMonth == currentMonth) and (endMonth != startMonth)): # Reservation ends in month
+                                sortEnds.append(reservations)
+                                
+                            if startMonth == currentMonth: # Reservation is in current month
+                                sortStarts.append(reservations)
+
+                    # Sort the lists depending on what is being used
+                    Sort(sortEnds,5) 
+                    Sort(sortStarts,4)
+
+                    # Append the final lists in order to the displayed list
+                    for x in sortEnds:
+                        sortedReservationList.append(x)
+                    for y in sortStarts:
+                        sortedReservationList.append(y)
+
+                    # Profits Monthly
+                    profitList.append(["Profits for month of " + MonthsList[currentMonth-1]+" "+ str(currentYear)])
+ 
+
+                if typeChosen == "Weekly":
+                    #Sorted Reservation List
+                    sortedReservationList.append(["Week One"])
+                    
+                    # Profits Weekly
+                    profitList.append(["= Week One ===============================","===========","============","=== Total: $","9999"])
+                    profitList.append(["LASTNAME",0,"00/00/2022","00/01/2022","$9999"])
+                    profitList.append(["= Week Two ===============================","===========","============","=== Total: $","0"])
+                    profitList.append(["= Week Three ===============================","===========","============","=== Total: $","0"])
+                    profitList.append(["= Week Four ===============================","===========","============","=== Total: $","0"])
+                    profitList.append(["= End of Month ===============================","===========","============","=== Total: $","9999"])
+
+
+                if typeChosen == "Yearly":
+                    sortedReservationList.append(["Reservations for Year of " + str(currentYear)])
+
+                    for x in MonthsList:
+                        #Sorted Reservatin List
+                        sortedReservationList.append([x])
+
+                        #Profits Yearly
+                        profitList.append([x])
+                
+                # Update the table displays to show new sorted data
+                ReportDisplayWindow['-SORTEDTABLE-'].update(values=sortedReservationList)
+                ReportDisplayWindow['-PROFITSTABLE-'].update(values=profitList)
 
     ReportDisplayWindow.close()
 

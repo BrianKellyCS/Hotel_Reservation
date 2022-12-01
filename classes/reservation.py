@@ -7,47 +7,9 @@ from datetime import datetime
 
 
 '''
-
 Date of Code: 10/10/2022
 Author: Brian Kelly
 Description: A class used to represent a Reservation. Inherits from Guest and Room class
-
-Class Variables: 
-    totalReservations: list (contains list of all reservations)
-
-Attributes:
-    guestID: int  (ID number of guest who has the reservation)
-    startDate: datetime (Starting date of reservation)
-    endDate: datetime (End date of reservation)
-    roomNumber: int (Room number on reservation)
-    reservationNumber : int (Reservation number)
-
-Methods:
-    createReservation(guestID : int, startDate : datetime, endDate : datetime, roomNumber : int) 
-        Creates a new reservation. 
-        Ensures that the room is available before creating new reservation. 
-        Displays a message if successful and appends new reservation to reservation_data.csv
-        No Return value
-
-    getReservationByRoom(roomNumber : int, dateToDisplay : datetime) 
-        Returns reservation by room number or a message telling the user that the room is available
-        Checks availability of room by calling isAvailableRoom() method from Room class. 
-        If it is not available, then the method searches totalReservations list to return the reservation object.
-
-    getReservationByResNum(reservationNumber : int) 
-        Returns reservation object by searching totalReservations list for the reservation number 
-        or a null value if no reservation found. 
-
-    getReservationByGuestID(guestID : int) 
-        Returns a list of reservation objects (since it is possible for a guest to have more than one reservation) by searching totalReservations by guest ID. 
-        If none found, returns a string telling the user there were no reservations for the guest.
-
-    editReservation(reservationNumber : int, newStartDate : datetime, newEndDate : datetime, roomNumber) 
-        Changes dates or room number for reservation. 
-        Starts by saving original reservation information, then checks availability by calling isAvailableRoom method from Room class. 
-        If it is available, then method updates reservation_data.csv with new information. If it is not available, the original reservation information is saved. 
-        No Return value
-
 '''
 class Reservation(Guest, Room):
     
@@ -55,7 +17,14 @@ class Reservation(Guest, Room):
     totalReservations = []
 
     def __init__(self,guestID = None, startDate=None,endDate=None, roomNumber = None,reservationNumber = None):
-        
+        '''
+        Attributes:
+            guestID: int  (ID number of guest who has the reservation)
+            startDate: datetime (Starting date of reservation)
+            endDate: datetime (End date of reservation)
+            roomNumber: int (Room number on reservation)
+            reservationNumber : int (Reservation number)
+        '''
         self.guestID = guestID
         self.reservationNumber = reservationNumber if reservationNumber != None else random.randint(1,500)#TO DO : method to assign better reservation number. ensure no repeat
         self.startDate = startDate
@@ -71,124 +40,155 @@ class Reservation(Guest, Room):
     def __iter__(self):
         return iter([self.guestID,self.startDate,self.endDate,self.roomNumber,self.reservationNumber])
 
-    #Creates a new reservation
     def createReservation(self,guestID,startDate,endDate,roomNumber):
+        '''
+        Creates a new reservation. 
+        Ensures that the room is available before creating new reservation. 
+        Displays a message if successful and appends new reservation to reservation_data.csv
+        Returns a string upon successful creation of reservation
+        '''
         guestObj = self.getGuestByID(guestID)   
         roomObj = self.getRoom(roomNumber)
 
-        #Check if room is available before creating reservation
+
         if(not self.isAvailableRoom(roomNumber,startDate,endDate)):
             print(f'Room {roomNumber} is not available between {startDate} and {endDate}')
             return
         
-        #Continue to create reservation
+
         try:
             newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
-            print(f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n")
             with open('data/reservation_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)
                 writer.writerow(newReservation)
+            return f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n"
                 
 
         except Exception as e:
             print(e)
             newReservation = None
         
-    #Returns reservation by room number  
+  
     def getReservationByRoom(self,roomNumber,dateToDisplay):
-        #Ensures dateToDisplay in correct format
+        '''
+        Returns a string. reservation information by room number or a message telling the user that the room is available
+        Checks availability of room by calling isAvailableRoom() method from Room class. 
+        Searches totalReservations list to return the reservation information.
+        '''
+
         if type(dateToDisplay) == str:
-            dateToDisplay = datetime.strptime(dateToDisplay, '%m/%d/%Y')
+            dateToDisplay = datetime.strptime(dateToDisplay, '%m/%d/%Y').date()
         
-        #If room number is not available for selected date
+
         if not self.isAvailableRoom(roomNumber,dateToDisplay):
-            
-            #Search reservations
             for res in self.totalReservations:
-                #Ensures dates being compared in correct format
                 try:
-                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y')
-                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y')
+                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y').date()
+                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y').date()
                 except:
                     resStart = res.startDate
                     resEnd = res.endDate
                 
                 if res.roomNumber == roomNumber:
-                    
-                    #If room number is found and date is within the reservation date range
                     if (dateToDisplay >= resStart) and (dateToDisplay < resEnd):
-                        
-                        #Returns reservation for room number
-                        return res
+                        return f'Reservation #: {res.reservationNumber}\nRoom #: {res.roomNumber}\nGuest ID: {res.guestID}\nStart Date: {res.startDate}\nEnd Date: {res.endDate}'
+
         else:
             return f'Room {roomNumber} is available'
 
     
-    #Returns reservation by reservation number
     def getReservationByResNum(self,reservationNumber):
+        '''
+        Returns reservation object by searching totalReservations list for the reservation number 
+        or a null value if no reservation found. 
+        '''
         for res in self.totalReservations:
             if res.reservationNumber == reservationNumber:
                 return res
         else:
-            print(f'No Reservation found for {reservationNumber}')
+            print(f'No Reservation found for {reservationNumber}\n')
             return None
 
-    #Return reservation by Guest ID
+
     def getReservationByGuestID(self,guestID):
+        '''
+        Returns a list of reservation objects (since it is possible for a guest to have more than one reservation) by searching totalReservations by guest ID. 
+        If none found, returns None.
+        '''
         reservationList = []
 
-        #Searches reservations for guest
-        for res in self.totalReservations:
+        for res in self.totalReservations[1:]:
             if res.guestID == guestID:
-                reservationList.append(str(res))
+                reservationList.append(list(res))
 
-        #check if none found
         if(len(reservationList) == 0):
-            return f'No reservations found for guest {guestID}'
+            return None
 
-        #Return reservations for guest
         return reservationList
 
         
-    #Change dates or room number for reservation
-    def editReservation(self, reservationNumber, newStartDate, newEndDate, roomNumber):
+    def editReservation(self, newStartDate, newEndDate, roomNumber, reservationNumber):
+        '''
+        Changes dates or room number for reservation. 
+        Starts by saving original reservation information, then checks availability by calling isAvailableRoom method from Room class. 
+        If it is available, then method updates reservation_data.csv with new information. If it is not available, the original reservation information is saved. 
+        No Return value
+        '''
         selectedRes = self.getReservationByResNum(reservationNumber)
+        if selectedRes == None:
+            return
         
-        #Save original reservation information incase dates for room are not available
         originalStart = selectedRes.startDate
         originalEnd = selectedRes.endDate
-        originalRoom = selectedRes.roomNumber
-        if selectedRes != None:
-            #If it is a valid reservation number
-            #Clear values in selected reservation
-            selectedRes.startDate = None
-            selectedRes.endDate = None
-            selectedRes.roomNumber = None             
+        originalRoom = selectedRes.roomNumber       
              
-            if self.isAvailableRoom(roomNumber,newStartDate,newEndDate):
-                #Update array
-                selectedRes.startDate = newStartDate
-                selectedRes.endDate = newEndDate
-                selectedRes.roomNumber = roomNumber
-
-                #Update in CSV File
-                df = pd.read_csv('data/reservation_data.csv')
-                filt = (df['reservationNumber'] == selectedRes.reservationNumber)
-                df.loc[filt,'startDate'] = selectedRes.startDate
-                df.loc[filt,'endDate'] = selectedRes.endDate
-                df.loc[filt,'roomNumber'] = selectedRes.roomNumber
-                df.to_csv('data/reservation_data.csv',index = False)
-
-            else:
-                #Save original information
-                selectedRes.startDate = originalStart
-                selectedRes.endDate = originalEnd
-                selectedRes.roomNumber = originalRoom   
+        if self.isAvailableRoom(roomNumber,newStartDate,newEndDate):
+            selectedRes.startDate = newStartDate
+            selectedRes.endDate = newEndDate
+            selectedRes.roomNumber = roomNumber
 
 
-    #Cancels reservation by reservationNumber 
+            df = pd.read_csv('data/reservation_data.csv')
+            filt = (df['reservationNumber'] == selectedRes.reservationNumber)
+            df.loc[filt,'startDate'] = selectedRes.startDate
+            df.loc[filt,'endDate'] = selectedRes.endDate
+            df.loc[filt,'roomNumber'] = selectedRes.roomNumber
+            df.to_csv('data/reservation_data.csv',index = False)
+
+        else:
+            print('invalid date')
+            selectedRes.startDate = originalStart
+            selectedRes.endDate = originalEnd
+            selectedRes.roomNumber = originalRoom   
+
+
     def cancelReservation(self,reservationNumber):
-        pass
+        '''
+        Cancels reservation by reservationNumber
+        Searches for reservation in reservation_data.csv. Removes row containing reservation if found
+        Updates CSV File
+        Returns string upon successfull cancelled reservation
+        '''
+        reservationToCancel = self.getReservationByResNum(reservationNumber)
+
+        if reservationToCancel == None:
+            return
+   
+        lines = list()
+        with open('data/reservation_data.csv','r') as readFile:
+            reader = csv.reader(readFile)
+            for row in reader:
+                lines.append(row)
+                for field in row:
+                    if field == str(reservationToCancel.reservationNumber):
+                        lines.remove(row)
+
+
+        with open('data/reservation_data.csv','w',newline = '') as writeFile:
+            writer = csv.writer(writeFile)
+            writer.writerows(lines)
+        
+        return f'Successfully cancelled reservation: {reservationToCancel.reservationNumber}'
 
     #Email reservation confirmation to guest
     def emailReservation(self,reservationNumber):

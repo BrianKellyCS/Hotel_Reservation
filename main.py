@@ -12,7 +12,7 @@
 import PySimpleGUI as sg
 from Images64 import * # A Seperate python file filled with Base64 strings of our images to make it easier to manage
 from classes.hotel import Hotel
-from datetime import date
+from datetime import date, datetime
 import pydoc
 
 DISPLAY_W, DISPLAY_H = 600,450
@@ -141,6 +141,7 @@ def DisplayRoomsWindow(currentDate):
 
     GROUND_FLOOR = 1
     MAX_FLOORS = 4
+    message = ''
 
     currentFloor = 1
     currentFloorText = "Floor: " + str(currentFloor)+ ""
@@ -165,7 +166,8 @@ def DisplayRoomsWindow(currentDate):
         [sg.Button(button_text='Submit', key = '-SUBMIT-', size = (5,1))],
         [sg.Text("Floor: 1", key='-FLOOR-', font='Default 12', size = (25,1), text_color="White")],
         [sg.Button(button_text='^', key = '-UP-', size = (25,5))],
-        [sg.Button(button_text='v', key = '-DOWN-', size = (25,5))]
+        [sg.Button(button_text='v', key = '-DOWN-', size = (25,5))],
+        [sg.Text(message, key='-MESSAGE-')]
     ]
 
     RoomsLayout = [[sg.Col(RoomsLayoutL, p=0), sg.Col(RoomsLayoutR, p=0)]]
@@ -307,30 +309,31 @@ def DisplayRoomsWindow(currentDate):
         
         if (last_clicked != 0 and last_clicked != None):
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 1:
-                print(hotel.getReservationByRoom(1,dateToDisplay))
+                message = hotel.getReservationByRoom(1,dateToDisplay)
             if (last_clicked == 6 or last_clicked == 7) and currentFloor == 1:
-                print(hotel.getReservationByRoom(2,dateToDisplay))
+                message = hotel.getReservationByRoom(2,dateToDisplay)
             if (last_clicked == 8 or last_clicked == 9) and currentFloor == 1:
-                print(hotel.getReservationByRoom(3,dateToDisplay))
+                message = hotel.getReservationByRoom(3,dateToDisplay)
             if (last_clicked == 10 or last_clicked == 11) and currentFloor == 1:
-                print(hotel.getReservationByRoom(4,dateToDisplay))
+                message = hotel.getReservationByRoom(4,dateToDisplay)
             if (last_clicked == 4 or last_clicked == 5) and currentFloor == 2:
-                print(hotel.getReservationByRoom(5,dateToDisplay))
+                message = hotel.getReservationByRoom(5,dateToDisplay)
             if (last_clicked == 6 or last_clicked == 7) and currentFloor == 2:
-                print(hotel.getReservationByRoom(6,dateToDisplay))
+                message = hotel.getReservationByRoom(6,dateToDisplay)
             if (last_clicked == 8 or last_clicked == 9) and currentFloor == 2:
-                print(hotel.getReservationByRoom(7,dateToDisplay))
+                message = hotel.getReservationByRoom(7,dateToDisplay)
             if (last_clicked == 10 or last_clicked == 11) and currentFloor == 2:
-                print(hotel.getReservationByRoom(8,dateToDisplay))
+                message = hotel.getReservationByRoom(8,dateToDisplay)
             if last_clicked == 12 or last_clicked == 13:
-                print(hotel.getReservationByRoom(9,dateToDisplay))
+                message = hotel.getReservationByRoom(9,dateToDisplay)
             if last_clicked == 14 or last_clicked == 15:
-                print(hotel.getReservationByRoom(10,dateToDisplay))
+                message = hotel.getReservationByRoom(10,dateToDisplay)
             if last_clicked == 16 or last_clicked == 17:
-                print(hotel.getReservationByRoom(11,dateToDisplay))
+                message = hotel.getReservationByRoom(11,dateToDisplay)
             if last_clicked == 18 or last_clicked == 19:
-                print(hotel.getReservationByRoom(12,dateToDisplay))
+                message = hotel.getReservationByRoom(12,dateToDisplay)
             last_clicked = None
+            RoomsDisplayWindow['-MESSAGE-'].update(message)
 
     RoomsDisplayWindow.close()
 
@@ -400,18 +403,21 @@ def GenerateManagerReport():
     reservationCount = 0
 
     for reservation in hotel.reservations:
-        if reservationCount >= 1:
-            tempReservation = [] # Formats data to be more readable
-            tempReservation.append(guestsList[int(reservation.guestID)-1][1]) #gets guest name from the ID number
-            tempReservation.append(reservation.guestID)
-            tempReservation.append(reservation.reservationNumber)
-            tempReservation.append(reservation.roomNumber)
-            # Only the dates, no timestamps
-            tempReservation.append(str(reservation.startDate)[0:10])
-            tempReservation.append(str(reservation.endDate)[0:10])
+        try:
+            if reservationCount >= 1:
+                tempReservation = [] # Formats data to be more readable
+                tempReservation.append(guestsList[int(reservation.guestID)-1][1]) #gets guest name from the ID number
+                tempReservation.append(reservation.guestID)
+                tempReservation.append(reservation.reservationNumber)
+                tempReservation.append(reservation.roomNumber)
+                # Only the dates, no timestamps
+                tempReservation.append(str(reservation.startDate)[0:10])
+                tempReservation.append(str(reservation.endDate)[0:10])
 
-            reservationList.append(tempReservation)
-        reservationCount = reservationCount + 1
+                reservationList.append(tempReservation)
+            reservationCount = reservationCount + 1
+        except Exception as e:
+            print(e)
     
     # Empty lists, will hold sorted data
     sortedReservationList = []
@@ -468,8 +474,10 @@ def GenerateManagerReport():
             if values['-DATE-'] != '':
                 # Initialize values+tables and get working date information from selected date
                 workingDate = values['-DATE-']
+                workingDate = datetime.strptime(workingDate, '%m/%d/%Y').date()
                 currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
                 currentYear = int(values['-DATE-'][6:10])
+
 
                 sortedReservationList = []
                 profitList = []
@@ -670,16 +678,134 @@ def GenerateManagerReport():
 
     ReportDisplayWindow.close()
 
-def DisplayReservations():
-    '''Formats all of the reservation data for readability and displays in the terminal. Used for debugging purposes.'''
-    for res in hotel.reservations:
-        print(res)
 
 def DisplayGuests():
     '''Formats all of the guest data for readability and prints it in the terminal. Used for debugging purposes.'''
 
     for guest in hotel.guests:
         print(guest)
+
+def DisplayReservations(userType,currentGuest):
+    '''
+    Formats reservations for readability and displays in a table.
+    Lists all reservations if Employee
+    or lists all reservations for Current Guest
+    '''
+    message = ""
+
+    if userType == 'Guest':
+        if currentGuest == None:
+            message = "Get started by filling out guest form"
+            return message
+
+        
+        #Only display reservations for curent guest
+        guestReservations = hotel.getReservationByGuestID(currentGuest.guestID)
+        if guestReservations == None:
+            message = f'No Reservations for guest {currentGuest.guestID}'
+            return message
+        print(hotel.getReservationByGuestID(currentGuest.guestID))
+        headings = list(hotel.reservations[0])
+        data = []
+        for res in guestReservations:
+            data.append(list(res))
+
+    
+    elif userType == 'Employee':
+        headings = list(hotel.reservations[0])
+        data = []
+        #Display reservations for all guests
+        for res in hotel.reservations[1:]:
+            data.append(list(res))
+    
+    layout = [
+            [sg.Button(button_text = 'Cancel Reservation', key = '-DELETE-'),sg.Button(button_text = 'Edit Reservation', key = '-EDIT-'),sg.Button('Exit')],
+            [sg.Table(
+                values=data, 
+                headings=headings, 
+                max_col_width=25,
+                auto_size_columns=True,
+                justification='right',
+                num_rows=20,
+                key='-TABLE-',
+                expand_x=True,
+                expand_y=True,
+                enable_click_events=True,
+                enable_events = True
+            )],
+            [sg.Text(message,key='-MESSAGE-')]
+    ]
+
+    window = sg.Window('Reservation Data', layout, resizable=True, finalize=True)
+
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Exit', 'Cancel', None):
+            break
+        if event == '-TABLE-':
+            try:
+                print(data[values['-TABLE-'][0]])
+                message = ''
+                window['-MESSAGE-'].update(message)
+            except Exception as e:
+                print(e)
+        if event == '-DELETE-':
+            if len(values['-TABLE-']) == 0:
+                message = 'No Reservation Selected'
+                window['-MESSAGE-'].update(message)
+                
+            else:
+                response = sg.popup_yes_no('Are you sure you want to\nCancel this Reservation?')
+                if response == 'Yes':
+                    #index 4 in table is reservation number
+                    resToCancel = hotel.getReservationByResNum(data[values['-TABLE-'][0]][4])
+                    print(resToCancel)
+                    message = hotel.cancelReservation(resToCancel.reservationNumber)
+                    window['-MESSAGE-'].update(message)
+                    #Remove reservation from table data and hotel reservations array
+                    del data[values['-TABLE-'][0]]
+
+                    for i,res in enumerate(hotel.reservations):
+                        if resToCancel.reservationNumber == res.reservationNumber:
+                            del hotel.reservations[i]
+                    
+
+                    #update table
+                    window['-TABLE-'].update(data)
+        
+        if event == '-EDIT-':
+            if len(values['-TABLE-']) == 0:
+                print('no reservation selected')
+            else:
+                resToEdit = hotel.getReservationByResNum(data[values['-TABLE-'][0]][4])
+
+                #Clear values in reservation selected to edit
+                resToEdit.startDate = None
+                resToEdit.endDate = None
+                resToEdit.roomNumber = None
+
+                newRoom, newStartDate, newEndDate = SearchRoomsWindow()
+                if newRoom != 0:
+                    #updates database CSV file
+                    hotel.editReservation(newStartDate,newEndDate,newRoom,resToEdit.reservationNumber)
+                    #update table data
+                    data[values['-TABLE-'][0]][1] = newStartDate
+                    data[values['-TABLE-'][0]][2] = newEndDate
+                    data[values['-TABLE-'][0]][3] = newRoom
+
+                    #update hotel reservations array
+                    for res in hotel.reservations:
+                        if resToEdit.reservationNumber == res.reservationNumber:
+                            res.startDate = newStartDate
+                            res.endDate = newEndDate
+                            res.roomNumber = newRoom
+
+                    window['-TABLE-'].update(data)
+                else:
+                    print('no room selected')
+            
+    window.close()
+
 
 def Main(): #Main Menu, launches all of the options
     '''Main function that drives the GUI and program. On start will prompt the user to login and will adjust the display based on wheter the user is a "Guest" or "Employee." The guest display is simpler, only allowing to login again, input user information and make a reservation. The employee display allows also adds the ability to visually search the rooms, check reservations made and access the manager's report. If this is closed the program will close.'''
@@ -700,10 +826,10 @@ def Main(): #Main Menu, launches all of the options
     layoutLeft = [
         [sg.Button(button_text='Switch User', key = '-MENU1-', size = (25,3))],
         [sg.Button(button_text='Guest Form', key = '-MENU3-', size = (25,3))],
-        [sg.Button(button_text='Search Rooms', key = '-MENU2-', size = (25,3))],
+        [sg.Button(button_text='Create Reservation', key = '-MENU2-', size = (25,3))],
+        [sg.Button(button_text='Display Reservations', key = '-MENU5-', size = (25,3))],
         [sg.Button(button_text='Display Rooms', key = '-MENU4-', visible = True if userType == "Employee" else False, size = (25,3))],
-        [sg.Button(button_text='Display Reservations', key = '-MENU5-', visible = True if userType == "Employee" else False, size = (25,3))],
-        [sg.Button(button_text='Display Guests', key = '-MENU6-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Manager Report', key = '-MENU6-', visible = True if userType == "Employee" else False, size = (25,3))],
         [sg.Text(infoText, key='-INFO-', font='Default 12', size = (25,30), p = (10,10))]
         ] 
         
@@ -736,7 +862,6 @@ def Main(): #Main Menu, launches all of the options
 
             #Set employee funcionality to visible or hidden depending on userType
             window['-MENU4-'].update(visible = True if userType == 'Employee' else False)
-            window['-MENU5-'].update(visible = True if userType == 'Employee' else False)
             window['-MENU6-'].update(visible = True if userType == 'Employee' else False)
 
         if event == '-MENU2-':
@@ -786,8 +911,9 @@ def Main(): #Main Menu, launches all of the options
         if event == '-MENU5-':
             print("Clicked Menu 5")
             window['-INFO-'].update("Menu 5 Clicked")
+            message = DisplayReservations(userType,currentGuest)
+            window['-INFO-'].update(message)
 
-            DisplayReservations()
 
         if event == '-MENU6-':
             print("Clicked Menu 6")

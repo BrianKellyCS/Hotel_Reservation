@@ -76,7 +76,12 @@ def InformationForm():
         if values[0] == '' or values [1] == '' or values [2] == '' or values [3] == '':
             print('Information not saved. Must fill out form completely')
         else:
-            return values[0], values[1], values[2], values[3]
+             #letter = "Hello just testing is this shit works."
+            #for emails in hotel.emailReservation:
+            #emailconfirmation.send_email('hello there oouou', values[3])
+            message = hotel.emailReservation(values[3], "Hello there please work.",values[1])
+            print('this will show the confirmation.pLEASE>>>>>>>>', values[3])
+            return values[0], values[1], values[2], values[3], message
 
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
         return None
@@ -899,6 +904,8 @@ def Main(): #Main Menu, launches all of the options
             #Updates currentGuest value from form
             currentGuest = hotel.createGuest(InformationForm())
             if currentGuest != None: #If user exits form before filling out
+                #letter = 'hello please work.'
+                #hotel.emailReservation('teamjabhotel@gmail.com', letter)
                 print("Updated Current Guest to:",currentGuest.fName,currentGuest.lName, "(ID: ",currentGuest.guestID,")")
 
         if event == '-MENU4-':

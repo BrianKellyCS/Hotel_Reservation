@@ -191,8 +191,28 @@ class Reservation(Guest, Room):
         return f'Successfully cancelled reservation: {reservationToCancel.reservationNumber}'
 
     #Email reservation confirmation to guest
-    def emailReservation(self,reservationNumber):
-        pass
+    def emailReservation(self,reservationNumber,reciever_email, message):
+        def emailReservation(self,reservationNumber,reciever_email, message):
+        #send email confirmation by reservation number.
+        #send message that also displays their info:
+        
+        sender_email = 'teamjabhotel@gmail.com'
+        #reciever_email = Guest(email)
+        password = 'eqrlzonjnrqmgwob'
+        
+        message = 'Thank you for choosing JAB Hotel. '
+        
+        theResev = self.getReservationByResNum(reservationNumber)
+        if theResev == None:
+            return
+        else:
+            server = smtplib.SMTP('smtp.gmail.com',587) 
+            server.starttls()
+            server.login(sender_email,password)
+            server.sendmail(sender_email,reciever_email,message)
+        
+        
+      #pass
 
 
     

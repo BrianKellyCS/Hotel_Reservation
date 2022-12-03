@@ -64,11 +64,7 @@ def test_createGuest():
     '''
     validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com']
     correctFirstName = validGuestInformation[0]
-<<<<<<< Updated upstream
-    invalidGuestInformation = ['No data','3','3']
-=======
     invalidGuestInformation = ['No data',3,'']
->>>>>>> Stashed changes
 
     assert type(hotel.createGuest(validGuestInformation)) == Guest
     assert hotel.createGuest(validGuestInformation).fName == correctFirstName

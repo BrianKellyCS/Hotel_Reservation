@@ -204,7 +204,7 @@ class Reservation(Guest, Room):
         '''
         Emails a confirmation email to guests provided email
         '''
-        smtp_server = "stmp.gmail.com"
+        smtp_server = "smtp.gmail.com"
         port = 587
         sender_email = "teamjabhotel@gmail.com"
         password = 'eqrlzonjnrqmgwob'

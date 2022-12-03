@@ -898,7 +898,7 @@ def Main(): #Main Menu, launches all of the options
                         print(rDateStart)
                         print(rDateEnd)
                         res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
-                        sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}')
+                        sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}\nA Confirmation e-mail will be sent to you shortly.')
                 else: #No Room/Window Closed
                     print("No Room Selected")
 

@@ -4,6 +4,7 @@ from classes.room import *
 import csv
 import pandas as pd
 from datetime import datetime
+import smtplib
 
 
 '''
@@ -66,6 +67,9 @@ class Reservation(Guest, Room):
             with open('data/reservation_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)
                 writer.writerow(newReservation)
+            
+            #Uncomment to test email method
+            #self.emailReservation(guestObj,newReservation)
             return newReservation
                 
 
@@ -195,9 +199,29 @@ class Reservation(Guest, Room):
         
         return f'Successfully cancelled reservation: {reservationToCancel.reservationNumber}'
 
-    #Email reservation confirmation to guest
-    def emailReservation(self,reservationNumber):
-        pass
+
+    def emailReservation(self,guest,reservation):
+        '''
+        Emails a confirmation email to guests provided email
+        '''
+        smtp_server = "stmp.gmail.com"
+        port = 587
+        sender_email = "teamjabhotel@gmail.com"
+        password = 'eqrlzonjnrqmgwob'
+        message = f"Hi {guest.fName}, It's confirmed, we'll see you on {reservation.startDate}! Thank you for booking with us. You'll find details of your reservation and payment details enclosed below"
+        
+        
+        try:
+            server = smtplib.SMTP(smtp_server, port)
+            server.starttls()
+            server.login(sender_email,password)
+            server.sendmail(sender_email,guest.email, message)
+            
+        except Exception as e:
+            print(e)
+            
+        finally:
+            server.quit()
 
 
     

@@ -39,10 +39,8 @@ print(hotel.getGuestByID(35325)) #returns guest not found
 print(hotel.getReservationByGuestID(156))
 
 #Change reservation # 437 to new dates
-<<<<<<< Updated upstream
 hotel.editReservation(437,'2022-10-13','2022-10-16',1)
-=======
-hotel.editReservation(437,"10/20/2022","10/21/2022",1)
+
 
 # Test making a guest with different names
 guestTest = ["Mr", "Mister", "111-222-3333", "Mr.Tester@gmail.com"]
@@ -66,4 +64,3 @@ currentGuest = hotel.createGuest(guestBadTest3)
 
 print(guestBadTest4)
 currentGuest = hotel.createGuest(guestBadTest4)
->>>>>>> Stashed changes

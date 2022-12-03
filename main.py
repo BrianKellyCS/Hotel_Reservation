@@ -125,7 +125,13 @@ def SearchRoomsWindow():
             roomSelected = roomChosen
             roomDateStart = values['-DATE-']
             roomDateEnd = values['-ENDDATE-']
-            break
+            if roomDateEnd <= roomDateStart:
+                sg.popup('Start Date must be before End Date')
+                roomSelected = 0
+                roomDateStart = "No Date"
+                roomDateEnd = "No Date"
+            else:
+                break
 
     SearchWindow.close()
     print(f"Sending back: {roomChosen}")
@@ -872,27 +878,29 @@ def Main(): #Main Menu, launches all of the options
             #Brings in value of currentGuest
             #global currentGuest
             print(f"Current Guest: {currentGuest}")
+            if(currentGuest == None):
+                window['-INFO-'].update("Get Started by filling out the Guest form")
 
+            else:
+                print("Selecting room reservation")
+                r, rDateStart, rDateEnd  = SearchRoomsWindow()
 
-            print("Selecting room reservation")
-            r, rDateStart, rDateEnd  = SearchRoomsWindow()
-
-            if r != 0: #If there is a room, start on reservation checks
-                roomToReserve = hotel.rooms[int(r)]
-            
-                #Once room is selected, checks guest information.
-                if currentGuest == None:
+                if r != 0: #If there is a room, start on reservation checks
+                    roomToReserve = hotel.rooms[int(r)]
                 
-                    #If none assigned, prompted to fill out guest form
-                    print("Get Started by filling out the Guest Form")
-                else:    
-                    #If form filled out or guest info already assigned. continues to set reservation
-                    print(rDateStart)
-                    print(rDateEnd)
-                    res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
-                    sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}')
-            else: #No Room/Window Closed
-                print("No Room Selected")
+                    #Once room is selected, checks guest information.
+                    if currentGuest == None:
+                    
+                        #If none assigned, prompted to fill out guest form
+                        print("Get Started by filling out the Guest Form")
+                    else:    
+                        #If form filled out or guest info already assigned. continues to set reservation
+                        print(rDateStart)
+                        print(rDateEnd)
+                        res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
+                        sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}')
+                else: #No Room/Window Closed
+                    print("No Room Selected")
 
         if event == '-MENU3-':
             print("Clicked Menu 3")

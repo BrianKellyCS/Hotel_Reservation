@@ -47,16 +47,21 @@ class Reservation(Guest, Room):
         Displays a message if successful and appends new reservation to reservation_data.csv
         Returns new reservation object if successful or None type if there was an error
         '''
-        guestObj = self.getGuestByID(guestID)   
-        roomObj = self.getRoom(roomNumber)
+        try:
+            guestObj = self.getGuestByID(guestID)   
+            roomObj = self.getRoom(roomNumber)
 
 
-        if(not self.isAvailableRoom(roomNumber,startDate,endDate)):
-            print(f'Room {roomNumber} is not available between {startDate} and {endDate}')
-            return None
+            startDate = datetime.strptime(startDate, '%Y-%m-%d').date()
+            endDate = datetime.strptime(endDate, '%Y-%m-%d').date()
+
+
+            if(not self.isAvailableRoom(roomNumber,startDate,endDate)):
+                print(f'Room {roomNumber} is not available between {startDate} and {endDate}')
+                return None
         
 
-        try:
+
             newReservation = Reservation(guestObj.guestID,startDate,endDate,roomObj.roomNumber)
             with open('data/reservation_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)

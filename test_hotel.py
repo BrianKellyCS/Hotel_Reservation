@@ -3,7 +3,18 @@ from classes.hotel import *
 hotel = Hotel()
 hotel.initializeHotelData()
 
-#Testing two methods from Reservation class
+#Testing three methods from Reservation class
+def test_createReservation():
+    '''
+    Parameters: Guest ID, Start date, End date, Room Number
+    Returns Reservation object if valid. or None type if invalid parameters
+    '''
+    assert type(hotel.createReservation(12,'2022-09-13','2022-09-16',4)) == Reservation
+    assert hotel.createReservation('invalid','guest',3,'here') == None
+
+    
+
+
 def test_getReservationByResNum():
     '''
     Parameter: reservation number 

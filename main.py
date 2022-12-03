@@ -25,7 +25,7 @@ infoText = "Welcome to JAB Hotel!"
 hotel = Hotel()
 hotel.initializeHotelData()
 rooms = hotel.rooms
-currentDate = date.today().strftime("%m/%d/%Y") #for default date to pass to function
+currentDate = date.today().strftime("%Y-%m-%d") #for default date to pass to function
 
 def Login(): 
     '''Login Screen to choose which experience to view, returns a str for user type ("Guest" or "Employee") and a string for a customized welcome message. Defaults to "Guest" if nothing is chosen.'''
@@ -93,7 +93,7 @@ def SearchRoomsWindow():
 
     SearchLayout = [
         [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%m/%d/%Y'), sg.Input(key='-ENDDATE-', size=(20,1)) ],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%Y-%m-%d'), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%Y-%m-%d'), sg.Input(key='-ENDDATE-', size=(20,1)) ],
         [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList, s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],  
         [sg.Submit(key='-SUBMIT-'), sg.Cancel()]
     ]
@@ -162,7 +162,7 @@ def DisplayRoomsWindow(currentDate):
 
     RoomsLayoutR =    [[RoomsDisplay]]
     RoomsLayoutL = [
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y'), sg.Input(key='-DATE-', size=(10,1)) ],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%Y-%m-%d'), sg.Input(key='-DATE-', size=(10,1)) ],
         [sg.Button(button_text='Submit', key = '-SUBMIT-', size = (5,1))],
         [sg.Text("Floor: 1", key='-FLOOR-', font='Default 12', size = (25,1), text_color="White")],
         [sg.Button(button_text='^', key = '-UP-', size = (25,5))],
@@ -442,7 +442,7 @@ def GenerateManagerReport():
 
     ReportLayoutL = [
         [sg.Text("Manager's Report", font='Default 12', text_color = "white", size = (30,1))],
-        [sg.CalendarButton('Select Date',  target='-DATE-', format='%m/%d/%Y',title="Select Date"), sg.Input(key='-DATE-', size=(20,1))],
+        [sg.CalendarButton('Select Date',  target='-DATE-', format='%Y-%m-%d',title="Select Date"), sg.Input(key='-DATE-', size=(20,1))],
         [sg.Text("Sort by", size = (6,1)), sg.Combo(TimeList, default_value=TimeList[0], s=(15,22), enable_events=True, readonly=True, k='-TIMESELECT-'), sg.Button(button_text='Submit', key = '-TIMESUBMIT-', size = (6,1))],
         [sg.Button(button_text='Return', key = '-RETURN-', size = (10,1), pad = (125,20))],
         [JabMiniDisplay]
@@ -474,10 +474,11 @@ def GenerateManagerReport():
             if values['-DATE-'] != '':
                 # Initialize values+tables and get working date information from selected date
                 workingDate = values['-DATE-']
-                workingDate = datetime.strptime(workingDate, '%m/%d/%Y').date()
-                currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
-                currentYear = int(values['-DATE-'][6:10])
-
+                workingDate = datetime.strptime(workingDate, '%Y-%m-%d').date()
+                #currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
+                #currentYear = int(values['-DATE-'][6:10])
+                currentMonth = workingDate.month
+                currentYear = workingDate.year
 
                 sortedReservationList = []
                 profitList = []
@@ -888,7 +889,8 @@ def Main(): #Main Menu, launches all of the options
                     #If form filled out or guest info already assigned. continues to set reservation
                     print(rDateStart)
                     print(rDateEnd)
-                    hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber) #Example reservation
+                    res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
+                    sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}')
             else: #No Room/Window Closed
                 print("No Room Selected")
 

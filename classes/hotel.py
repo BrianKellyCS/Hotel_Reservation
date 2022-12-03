@@ -43,7 +43,7 @@ class Hotel(Reservation):
 
         for index,res in enumerate(reservation_data):
             if index > 0:
-                Reservation(int(res[0]),datetime.strptime(res[1], "%m/%d/%Y").date(),datetime.strptime(res[2], "%m/%d/%Y").date(),int(res[3]),int(res[4]))
+                Reservation(int(res[0]),datetime.strptime(res[1], "%Y-%m-%d").date(),datetime.strptime(res[2], "%Y-%m-%d").date(),int(res[3]),int(res[4]))
             else:
                 Reservation(res[0],res[1],res[2],res[3],res[4])
 

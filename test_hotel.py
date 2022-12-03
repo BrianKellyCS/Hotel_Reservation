@@ -53,7 +53,7 @@ def test_createGuest():
     '''
     validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com']
     correctFirstName = validGuestInformation[0]
-    invalidGuestInformation = ['No data',3]
+    invalidGuestInformation = ['No data','3','3']
 
     assert type(hotel.createGuest(validGuestInformation)) == Guest
     assert hotel.createGuest(validGuestInformation).fName == correctFirstName
@@ -69,18 +69,18 @@ def test_searchRooms():
     '''
 
     '''Testing to ensure list of 'Basic' rooms is will be length of 7 when 1 registration during date range. 8 if 0 registrations'''
-    assert len(hotel.searchRooms('Basic','10/13/2022','10/16/2022')) == 7
-    assert len(hotel.searchRooms('Basic','10/13/2022','10/15/2022')) == 8
+    assert len(hotel.searchRooms('Basic','2022-10-13','2022-10-16')) == 7
+    assert len(hotel.searchRooms('Basic','2022-10-13','2022-10-15')) == 8
 
 def test_isAvailableRoom():
 
     '''Date Range: Testing to ensure a room that has registration during date range returns False'''
-    assert hotel.isAvailableRoom(3,'10/13/2022','10/16/2022') == False
-    assert hotel.isAvailableRoom(4,'10/13/2022','10/16/2022') == True
+    assert hotel.isAvailableRoom(3,'2022-10-13','2022-10-16') == False
+    assert hotel.isAvailableRoom(4,'2022-10-13','2022-10-16') == True
 
     '''Single Date: Returns false if room is not available on selected date'''
-    assert hotel.isAvailableRoom(3,'10/16/2022') == False
-    assert hotel.isAvailableRoom(3,'10/19/2022') == True
+    assert hotel.isAvailableRoom(3,'2022-10-16') == False
+    assert hotel.isAvailableRoom(3,'2022-10-19') == True
 
 
 

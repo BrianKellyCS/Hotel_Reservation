@@ -45,8 +45,8 @@ class Room:
         Returns a list of room numbers that are available within the start and end date
         '''
         roomList = []
-        startDate = datetime.strptime(startDate, '%m/%d/%Y').date()
-        endDate = datetime.strptime(endDate, '%m/%d/%Y').date()
+        startDate = datetime.strptime(startDate, '%Y-%m-%d').date()
+        endDate = datetime.strptime(endDate, '%Y-%m-%d').date()
         if roomType in self.roomChoices:
             for idx in Room.totalRooms:
                 if idx.roomType == roomType and self.isAvailableRoom(idx.roomNumber,startDate,endDate):
@@ -76,12 +76,12 @@ class Room:
         Returns bool value. True if room is available on the date. False if not
         '''
         if type(date) == str:
-            date = datetime.strptime(date, '%m/%d/%Y').date()
+            date = datetime.strptime(date, '%Y-%m-%d').date()
 
         for res in self.totalReservations[1:]:
             try:
-                resStart = datetime.strptime(res.startDate, '%m/%d/%Y').date()
-                resEnd = datetime.strptime(res.endDate, '%m/%d/%Y').date()
+                resStart = datetime.strptime(res.startDate, '%Y-%m-%d').date()
+                resEnd = datetime.strptime(res.endDate, '%Y-%m-%d').date()
             except:
                 resStart = res.startDate
                 resEnd = res.endDate
@@ -100,14 +100,14 @@ class Room:
         Returns bool value. True if room is available in date range, False if not.
         '''
         if type(startDate) == str:
-            startDate = datetime.strptime(startDate, '%m/%d/%Y').date()
-            endDate = datetime.strptime(endDate, '%m/%d/%Y').date()
+            startDate = datetime.strptime(startDate, '%Y-%m-%d').date()
+            endDate = datetime.strptime(endDate, '%Y-%m-%d').date()
 
 
         for res in self.totalReservations[1:]:
             try:
-                resStart = datetime.strptime(res.startDate, '%m/%d/%Y').date()
-                resEnd = datetime.strptime(res.endDate, '%m/%d/%Y').date()
+                resStart = datetime.strptime(res.startDate, '%Y-%m-%d').date()
+                resEnd = datetime.strptime(res.endDate, '%Y-%m-%d').date()
             except:
                 resStart = res.startDate
                 resEnd = res.endDate

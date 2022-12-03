@@ -45,7 +45,7 @@ class Reservation(Guest, Room):
         Creates a new reservation. 
         Ensures that the room is available before creating new reservation. 
         Displays a message if successful and appends new reservation to reservation_data.csv
-        Returns a string upon successful creation of reservation
+        Returns new reservation object if successful or None type if there was an error
         '''
         guestObj = self.getGuestByID(guestID)   
         roomObj = self.getRoom(roomNumber)
@@ -53,7 +53,7 @@ class Reservation(Guest, Room):
 
         if(not self.isAvailableRoom(roomNumber,startDate,endDate)):
             print(f'Room {roomNumber} is not available between {startDate} and {endDate}')
-            return
+            return None
         
 
         try:
@@ -61,7 +61,7 @@ class Reservation(Guest, Room):
             with open('data/reservation_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)
                 writer.writerow(newReservation)
-            return f"Reservation successfully created for {guestObj.fName} {guestObj.lName} (Guest ID: {newReservation.guestID})\n"
+            return newReservation
                 
 
         except Exception as e:
@@ -77,14 +77,14 @@ class Reservation(Guest, Room):
         '''
 
         if type(dateToDisplay) == str:
-            dateToDisplay = datetime.strptime(dateToDisplay, '%m/%d/%Y').date()
+            dateToDisplay = datetime.strptime(dateToDisplay, '%Y-%m-%d').date()
         
 
         if not self.isAvailableRoom(roomNumber,dateToDisplay):
             for res in self.totalReservations:
                 try:
-                    resStart = datetime.strptime(res.startDate, '%m/%d/%Y').date()
-                    resEnd = datetime.strptime(res.endDate, '%m/%d/%Y').date()
+                    resStart = datetime.strptime(res.startDate, '%Y-%m-%d').date()
+                    resEnd = datetime.strptime(res.endDate, '%Y-%m-%d').date()
                 except:
                     resStart = res.startDate
                     resEnd = res.endDate

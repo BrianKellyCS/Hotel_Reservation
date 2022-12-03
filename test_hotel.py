@@ -60,15 +60,29 @@ def test_getGuestByID():
 def test_createGuest():
     '''
     Parameter: list of guest information.
-    Returns the new guest object if valid, or None if invalid
+    Returns the new guest object if valid, or None if invalid (invalid if strings are not used or string length not at least 1 character)
     '''
     validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com']
     correctFirstName = validGuestInformation[0]
+<<<<<<< Updated upstream
     invalidGuestInformation = ['No data','3','3']
+=======
+    invalidGuestInformation = ['No data',3,'']
+>>>>>>> Stashed changes
 
     assert type(hotel.createGuest(validGuestInformation)) == Guest
     assert hotel.createGuest(validGuestInformation).fName == correctFirstName
+
+    # Field is left blank
     assert hotel.createGuest(invalidGuestInformation) == None
+    
+    # Field is not a string
+    assert hotel.createGuest([invalidGuestInformation[1],validGuestInformation[1],validGuestInformation[2],validGuestInformation[3]]) == None
+    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],invalidGuestInformation[1],validGuestInformation[3]]) == None
+
+    # Field is not a valid length
+    assert hotel.createGuest([validGuestInformation[0],invalidGuestInformation[2],validGuestInformation[2],validGuestInformation[3]]) == None
+    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],validGuestInformation[2],invalidGuestInformation[2]]) == None
 
 
 #Testing two methods from Room class

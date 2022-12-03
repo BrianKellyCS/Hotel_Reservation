@@ -61,6 +61,30 @@ class Guest:
         Returns newGuest object or an error message if unsuccessful.
         '''
         try:
+            if not type(guestInfo[0]) is str:
+                raise Exception("First Name must be a valid string.")
+
+            if len(guestInfo[0]) < 1:
+                  raise Exception("First Name must have at least one character.")
+            
+            if not type(guestInfo[1]) is str:
+                raise Exception("Last Name must be a valid string.")
+                
+            if len(guestInfo[1]) < 1:
+                  raise Exception("Last Name must have at least one character.")
+
+            if not type(guestInfo[2]) is str:
+                raise Exception("Phone number must be a valid string.")
+                
+            if len(guestInfo[2]) < 1:
+                raise Exception("Phone Number must have at least one character.")
+
+            if not type(guestInfo[3]) is str:
+                raise Exception("Email must be a valid string.")
+                
+            if len(guestInfo[3]) < 1:
+                raise Exception("Email must have at least one character.")
+
             newGuest = Guest(guestInfo[0],guestInfo[1],guestInfo[2],guestInfo[3])
             newGuest.assignGuestID(Guest.totalGuests[-2].guestID)
             with open('data/guest_data.csv', 'a',newline='') as stream:

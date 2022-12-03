@@ -878,12 +878,16 @@ def Main(): #Main Menu, launches all of the options
             #Brings in value of currentGuest
             #global currentGuest
             print(f"Current Guest: {currentGuest}")
+<<<<<<< Updated upstream
             if(currentGuest == None):
                 window['-INFO-'].update("Get Started by filling out the Guest form")
 
             else:
                 print("Selecting room reservation")
                 r, rDateStart, rDateEnd  = SearchRoomsWindow()
+=======
+            sg.Print("Nice.")
+>>>>>>> Stashed changes
 
                 if r != 0: #If there is a room, start on reservation checks
                     roomToReserve = hotel.rooms[int(r)]
@@ -903,7 +907,7 @@ def Main(): #Main Menu, launches all of the options
                     print("No Room Selected")
 
         if event == '-MENU3-':
-            print("Clicked Menu 3")
+            print("Creating a new guest:")
             window['-INFO-'].update("Menu 3 Clicked")
 
             #Updates currentGuest value from form

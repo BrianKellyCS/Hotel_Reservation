@@ -62,7 +62,7 @@ def test_createGuest():
     Parameter: list of guest information.
     Returns the new guest object if valid, or None if invalid (invalid if strings are not used or string length not at least 1 character)
     '''
-    validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com']
+    validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com','084e0343a0486ff05530df6c705c8bb4']
     correctFirstName = validGuestInformation[0]
     invalidGuestInformation = ['No data',3,'']
 
@@ -73,12 +73,12 @@ def test_createGuest():
     assert hotel.createGuest(invalidGuestInformation) == None
     
     # Field is not a string
-    assert hotel.createGuest([invalidGuestInformation[1],validGuestInformation[1],validGuestInformation[2],validGuestInformation[3]]) == None
-    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],invalidGuestInformation[1],validGuestInformation[3]]) == None
+    assert hotel.createGuest([invalidGuestInformation[1],validGuestInformation[1],validGuestInformation[2],validGuestInformation[3],validGuestInformation[4]]) == None
+    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],invalidGuestInformation[1],validGuestInformation[3],validGuestInformation[4]]) == None
 
     # Field is not a valid length
-    assert hotel.createGuest([validGuestInformation[0],invalidGuestInformation[2],validGuestInformation[2],validGuestInformation[3]]) == None
-    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],validGuestInformation[2],invalidGuestInformation[2]]) == None
+    assert hotel.createGuest([validGuestInformation[0],invalidGuestInformation[2],validGuestInformation[2],validGuestInformation[3],validGuestInformation[4]]) == None
+    assert hotel.createGuest([validGuestInformation[0],validGuestInformation[1],validGuestInformation[2],invalidGuestInformation[2],validGuestInformation[4]]) == None
 
 
 #Testing two methods from Room class

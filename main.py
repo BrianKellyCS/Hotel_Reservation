@@ -14,6 +14,7 @@ from Images64 import * # A Seperate python file filled with Base64 strings of ou
 from classes.hotel import Hotel
 from datetime import date, datetime
 import pydoc
+import hashlib
 
 DISPLAY_W, DISPLAY_H = 600,450
 BG_COLOR = "#1E90FF"
@@ -25,46 +26,82 @@ infoText = "Welcome to JAB Hotel!"
 hotel = Hotel()
 hotel.initializeHotelData()
 rooms = hotel.rooms
-currentDate = date.today().strftime("%Y-%m-%d") #for default date to pass to function
+currentDate = date.today().strftime("%Y-%m-%d")
 
-def Login(): 
-    '''Login Screen to choose which experience to view, returns a str for user type ("Guest" or "Employee") and a string for a customized welcome message. Defaults to "Guest" if nothing is chosen.'''
-    login = [[sg.Button(button_text='EMPLOYEE', key = '-EMPLOYEE-', size = (25,5),p=(100,50))],[sg.Button(button_text='GUEST', key = '-GUEST-', size = (25,5), p=(100,5))]]
-    loginWindow = sg.Window("Login Screen", login, size=(400,400), finalize=True)
+def Login():
+    '''Login as guest with valid username (email) and password. or as an employee. If new guest, fill out information form to enter main menu'''
+    layout = [[sg.Text("Log In", size =(15, 1), font=40)],
+            [sg.Text("Username", size =(15, 1), font=16),sg.InputText(key='-usrnm-', font=16)],
+            [sg.Text("Password", size =(15, 1), font=16),sg.InputText(key='-pwd-', password_char='*', font=16)],
+            [sg.Button('Ok'),sg.Button('Cancel'),sg.Button('Sign up')]]
 
-    #Sets default user message and status to non-specific guest
-    userType = "Guest"
-    userStatus = "Welcome Valued Guest!"
+    window = sg.Window("Log In", layout)
+
 
     while True:
-        event, values = loginWindow.read(timeout=60)
-        if event == "Exit" or event == sg.WIN_CLOSED:
-            print("Defaulting to guest...")
-            loginWindow.close()
-            return userType, userStatus
+        validCredentials = False
+        event,values = window.read()
+
+        if event == "Cancel" or event == sg.WIN_CLOSED:
+            break
+
+        if event == "Sign up":
+            currentGuest = hotel.createGuest(InformationForm())
+            if currentGuest != None:
+                userType = 'Guest'
+                userMessage = f"Welcome VALUED GUEST # {currentGuest.guestID}!"
+                validCredentials = True
+                window.close()
+            else:
+                userMessage = "Did not fill out form."
+
+        if event == "Ok":
+            try:
+                auth = values['-pwd-'].encode()
+                auth_hash = hashlib.md5(auth).hexdigest()
+                print(auth_hash)
+            except Exception as e:
+                print(e)
+
+            #Check guests
+            for guest in hotel.guests:
+                if values['-usrnm-'] == guest.email and auth_hash == guest.guestPWD:
+                    validCredentials = True
+                    currentGuest = guest
+                    userType = 'Guest'
+                    userMessage = f"Welcome VALUED GUEST # {currentGuest.guestID}!"
+                    window.close()
+                    break
+
+            #Check if employee login
+            if values['-usrnm-'] == 'admin' and values['-pwd-'] == 'admin':
+                validCredentials = True
+                currentGuest = None
+                userType = 'Employee'
+                userMessage = 'This is an employee'
+                window.close()
+            elif not validCredentials:
+                userMessage = "Invalid Username or Password.\nPlease try again."
 
 
-        if event == '-EMPLOYEE-':
-            print("This is an employee...")
-            userType = "Employee"
-            userStatus = "Hello, EMPLOYEE #8180!"
-            loginWindow.close()
-            return userType, userStatus
+        if not validCredentials:
+            sg.popup(userMessage)
+        else:
+            Main(userType,currentGuest,userMessage)
 
 
-        if event == '-GUEST-': # For if the user selects guest, they can be logged in
-            print("This is a guest...")
-            userType = "Guest"
-            userStatus = "Welcome VALUED Guest #9999!"
-            loginWindow.close()
-            return userType, userStatus
+    window.close()
+
 
 def InformationForm(): 
     '''A form that lets the user input their information. If submit is pressed it will return four strings: First name, Last name, Phone Number and Email as typed in the form. If the form is not filled out or closed it will return None'''
     FormLayout = [
         [sg.Text('Please enter reservation information: ')],
-        [sg.Text('First Name', size =(15, 1)), sg.InputText(), sg.Text('Last Name', size =(15, 1), justification='Left'), sg.InputText()],
-        [sg.Text('Phone', size =(15, 1)), sg.InputText(), sg.Text('Email', size =(15, 1), justification='Left'), sg.InputText()],
+        [sg.Text('First Name', size =(15, 1)), sg.InputText()], 
+        [sg.Text('Last Name', size =(15, 1)), sg.InputText()],
+        [sg.Text('Phone', size =(15, 1)), sg.InputText()], 
+        [sg.Text('Email', size =(15, 1)), sg.InputText()],
+        [sg.Text('Password', size =(15, 1)), sg.InputText()],
         [sg.Submit(), sg.Cancel()]
     ]
   
@@ -73,20 +110,21 @@ def InformationForm():
 
     FormWindow.close()   
     if (event == "Submit"):
-        if values[0] == '' or values [1] == '' or values [2] == '' or values [3] == '':
+        if values[0] == '' or values [1] == '' or values [2] == '' or values [3] == '' or values[4] == '':
             print('Information not saved. Must fill out form completely')
         else:
-            return values[0], values[1], values[2], values[3]
+            values[4] = values[4].encode()
+            values[4] = hashlib.md5(values[4]).hexdigest()
+            return values[0], values[1], values[2], values[3], values[4]
 
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
         return None
 
 
-
-def SearchRoomsWindow():
+def HandleReservationsWindow(userType,currentGuest,createOrEdit):
     '''Opens a new window where the user can select a reservation start date, an end date and a room type and recieve a list of available rooms to reserve. Returns an int for the chosen room number, a string for the reservation start date ("MM/DD/YYYY") and a string for the reservation end date ("MM/DD"YYYY") when submit is pressed and the reservation is valid.'''
     SEARCH_CANVAS_W, SEARCH_CANVAS_H = 300,350
-    
+
     RoomTypeList = ["Basic", "Deluxe", "Suite"]
     SearchList = ["None"]
     roomChosen,roomSelected,roomDateStart,roomDateEnd = 0,0,"No Date","No Date"
@@ -95,47 +133,67 @@ def SearchRoomsWindow():
         [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
         [sg.CalendarButton('Select Date',  target='-DATE-', format='%Y-%m-%d'), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%Y-%m-%d'), sg.Input(key='-ENDDATE-', size=(20,1)) ],
         [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList, s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],  
+        [sg.Text('Reservation Cost: ', key='-INFO-')],
+        [sg.Text('Card Number', size =(15, 1)), sg.InputText(key='-CARD-')],
+        [sg.CalendarButton('Expiration Date:',  target='-EXP_DATE-', format='%Y-%m-%d'), sg.Input(key='-EXP_DATE-', size=(20,1))],
+        [sg.Text('Card CVV', size =(15, 1)), sg.InputText(key='-CVV-')],
         [sg.Submit(key='-SUBMIT-'), sg.Cancel()]
     ]
 
     SearchWindow = sg.Window('Search Rooms', SearchLayout)
+    if userType == 'Employee':
+        if createOrEdit == 'Create':
+            justDisplayGuests = False
+            currentGuest = DisplayGuests(userType,justDisplayGuests)
+        print(currentGuest)
 
-    while True:
-        event, values = SearchWindow.read()
-        if event in (sg.WIN_CLOSED, 'Exit', 'Cancel', None):
-            break
-        
-        if (event == "-ROOMTYPE-"):
-            typeChosen = values[event]
-            SearchList = []
-            if values['-DATE-'] != '' and values['-ENDDATE-'] != '':
-                SearchList = hotel.searchRooms(typeChosen,values['-DATE-'],values['-ENDDATE-'])
-            SearchWindow['-SEARCH-'].update(value="None", values=SearchList)
-            roomChosen = 0
-
-        if (event == "-SEARCH-"):
-            roomChosen = values[event]
-
-            if roomChosen == "None" or roomChosen == None:
-                roomSelected = 0
-                roomDateStart = "No Date"
-                roomDateEnd = "No Date"
-
-        if (event == "-SUBMIT-"):
-            roomSelected = roomChosen
-            roomDateStart = values['-DATE-']
-            roomDateEnd = values['-ENDDATE-']
-            if roomDateEnd <= roomDateStart:
-                sg.popup('Start Date must be before End Date')
-                roomSelected = 0
-                roomDateStart = "No Date"
-                roomDateEnd = "No Date"
-            else:
+    if currentGuest == "No Guest Selected":
+        roomSelected = 0
+        roomDateStart = "No Date"
+        roomDateEnd = "No Date"
+        return roomSelected, roomDateStart, roomDateEnd, currentGuest
+    else:
+        while True:
+            event, values = SearchWindow.read()
+            if event in (sg.WIN_CLOSED, 'Exit', 'Cancel', None):
                 break
+            
+            if (event == "-ROOMTYPE-"):
+                typeChosen = values[event]
+                SearchList = []
+                if values['-DATE-'] != '' and values['-ENDDATE-'] != '':
+                    SearchList = hotel.searchRooms(typeChosen,values['-DATE-'],values['-ENDDATE-'])
+                SearchWindow['-SEARCH-'].update(value="None", values=SearchList)
+                roomChosen = 0
 
-    SearchWindow.close()
-    print(f"Sending back: {roomChosen}")
-    return roomSelected, roomDateStart, roomDateEnd
+
+            if (event == "-SEARCH-"):
+                roomChosen = values[event]
+                if createOrEdit == 'Edit':
+                    userMessage = 'Updating Reservation'
+                elif createOrEdit == 'Create':
+                    userMessage = f'Cost of Reservation: ${hotel.getRoom(roomChosen).roomPrice}'
+                SearchWindow['-INFO-'].update(userMessage)
+                if roomChosen == "None" or roomChosen == None:
+                    roomSelected = 0
+                    roomDateStart = "No Date"
+                    roomDateEnd = "No Date"
+
+            if (event == "-SUBMIT-"):
+                roomSelected = roomChosen
+                roomDateStart = values['-DATE-']
+                roomDateEnd = values['-ENDDATE-']
+                if roomDateEnd <= roomDateStart:
+                    sg.popup('Start Date must be before End Date')
+                    roomSelected = 0
+                    roomDateStart = "No Date"
+                    roomDateEnd = "No Date"
+                else:
+                    break
+
+        SearchWindow.close()
+        print(f"Sending back: {roomChosen}")
+        return roomSelected, roomDateStart, roomDateEnd, currentGuest
 
    
 def DisplayRoomsWindow(currentDate):
@@ -685,12 +743,82 @@ def GenerateManagerReport():
 
     ReportDisplayWindow.close()
 
+def DisplayGuests(userType,justDisplayGuests):
+    '''
+    Formats guests for readability and displays in a table.
+    Lists all guests if Employee
 
-def DisplayGuests():
-    '''Formats all of the guest data for readability and prints it in the terminal. Used for debugging purposes.'''
+    '''
+    message = ""
+    
+    if userType == 'Employee':
+        headings = [hotel.guests[0].guestID,hotel.guests[0].lName,hotel.guests[0].fName,hotel.guests[0].email]
+        data = []
+        #Display reservations for all guests
+        for guest in hotel.guests[1:]:
+            dataToAdd = [guest.guestID, guest.lName, guest.fName, guest.email]
+            data.append(list(dataToAdd))
 
-    for guest in hotel.guests:
-        print(guest)
+    layout = [
+            [sg.Button(button_text = 'Select Guest', key = '-SELECT-', visible = False if justDisplayGuests else True),sg.Text('Select Guest from Table to create Reservation',key='-INSTRUCTION-',visible = False if justDisplayGuests else True)],
+            [sg.Button(button_text = 'Create New Guest', key = '-NEW-')],
+            [sg.Table(
+                values=data, 
+                headings=headings, 
+                max_col_width=25,
+                auto_size_columns=True,
+                justification='right',
+                num_rows=20,
+                key='-TABLE-',
+                expand_x=True,
+                expand_y=True,
+                enable_click_events=True,
+                enable_events = True
+            )],
+            [sg.Text(message,key='-MESSAGE-')]
+    ]
+
+    window = sg.Window('Guest List', layout, resizable=True, finalize=True)
+
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, None):
+            window.close()
+            selectedGuest = "No Guest Selected"
+            return selectedGuest
+
+        if event == '-TABLE-':
+            try:
+                print(data[values['-TABLE-'][0]])
+                message = ''
+                window['-MESSAGE-'].update(message)
+            except Exception as e:
+                print(e)
+        
+        if event == '-SELECT-':
+            if len(values['-TABLE-']) == 0:
+                message = 'No Guest Selected'
+                window['-MESSAGE-'].update(message)
+                
+            else:
+                print(type(data[values['-TABLE-'][0]][0]))
+                selectedGuest = hotel.getGuestByID(int(data[values['-TABLE-'][0]][0]))
+                print("IN SELECT",selectedGuest)
+                window.close()
+                return selectedGuest
+
+        if event == '-NEW-':
+            newGuest = hotel.createGuest(InformationForm())
+            if newGuest != None:
+                dataToAdd = [newGuest.guestID, newGuest.lName, newGuest.fName, newGuest.email]
+                data.append(list(dataToAdd))
+
+            #update table
+            window['-TABLE-'].update(data)
+        
+
+            
+    window.close()
 
 def DisplayReservations(userType,currentGuest):
     '''
@@ -701,9 +829,9 @@ def DisplayReservations(userType,currentGuest):
     message = ""
 
     if userType == 'Guest':
-        if currentGuest == None:
-            message = "Get started by filling out guest form"
-            return message
+        #if currentGuest == None:
+            #message = "Get started by filling out guest form"
+            #return message
 
         
         #Only display reservations for curent guest
@@ -719,6 +847,7 @@ def DisplayReservations(userType,currentGuest):
 
     
     elif userType == 'Employee':
+        currentGuest = None
         headings = list(hotel.reservations[0])
         data = []
         #Display reservations for all guests
@@ -785,16 +914,25 @@ def DisplayReservations(userType,currentGuest):
                 print('no reservation selected')
             else:
                 resToEdit = hotel.getReservationByResNum(data[values['-TABLE-'][0]][4])
+                currentGuest = hotel.getGuestByID(resToEdit.guestID)
+
+                #Save original reservation info incase of cancelling the edit window
+                originalRoomCost = hotel.getRoom(resToEdit.roomNumber).roomPrice
+                originalStart = resToEdit.startDate
+                originalEnd = resToEdit.endDate
+                originalRoom = resToEdit.roomNumber
 
                 #Clear values in reservation selected to edit
                 resToEdit.startDate = None
                 resToEdit.endDate = None
                 resToEdit.roomNumber = None
+                createOrEdit = 'Edit'
 
-                newRoom, newStartDate, newEndDate = SearchRoomsWindow()
+                newRoom, newStartDate, newEndDate,currentGuest = HandleReservationsWindow(userType,currentGuest,createOrEdit)
                 if newRoom != 0:
                     #updates database CSV file
                     hotel.editReservation(newStartDate,newEndDate,newRoom,resToEdit.reservationNumber)
+
                     #update table data
                     data[values['-TABLE-'][0]][1] = newStartDate
                     data[values['-TABLE-'][0]][2] = newEndDate
@@ -806,18 +944,27 @@ def DisplayReservations(userType,currentGuest):
                             res.startDate = newStartDate
                             res.endDate = newEndDate
                             res.roomNumber = newRoom
+                            newRoomCost = hotel.getRoom(res.roomNumber).roomPrice
 
                     window['-TABLE-'].update(data)
+                    if newRoomCost > originalRoomCost:
+                        sg.popup(f'${newRoomCost - originalRoomCost} will be charged to your card.')
+                    if originalRoomCost > newRoomCost:
+                        sg.popup(f'${originalRoomCost - newRoomCost} will be refunded to your card.')
+                    
                 else:
                     print('no room selected')
+                    resToEdit.startDate = originalStart
+                    resToEdit.endDate = originalEnd
+                    resToEdit.roomNumber = originalRoom
+
             
     window.close()
 
 
-def Main(): #Main Menu, launches all of the options
+def Main(userType, currentGuest,userMessage): #Main Menu, launches all of the options
     '''Main function that drives the GUI and program. On start will prompt the user to login and will adjust the display based on wheter the user is a "Guest" or "Employee." The guest display is simpler, only allowing to login again, input user information and make a reservation. The employee display allows also adds the ability to visually search the rooms, check reservations made and access the manager's report. If this is closed the program will close.'''
-    global userType
-    currentGuest = None
+
     DISPLAY_CANVAS_W, DISPLAY_CANVAS_H = 300,350
     # Display area used for logo image
     Display = sg.Graph(
@@ -831,12 +978,12 @@ def Main(): #Main Menu, launches all of the options
 
 
     layoutLeft = [
-        [sg.Button(button_text='Switch User', key = '-MENU1-', size = (25,3))],
-        [sg.Button(button_text='Guest Form', key = '-MENU3-', size = (25,3))],
-        [sg.Button(button_text='Create Reservation', key = '-MENU2-', size = (25,3))],
-        [sg.Button(button_text='Display Reservations', key = '-MENU5-', size = (25,3))],
-        [sg.Button(button_text='Display Rooms', key = '-MENU4-', visible = True if userType == "Employee" else False, size = (25,3))],
-        [sg.Button(button_text='Manager Report', key = '-MENU6-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Switch User', key = '-SWITCH-', size = (25,3))],
+        [sg.Button(button_text='Display Guests', key = '-DISPLAY_GUESTS-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Create Reservation', key = '-CREATE_RES-', size = (25,3))],
+        [sg.Button(button_text='Display Reservations', key = '-DISPLAY_RES-', size = (25,3))],
+        [sg.Button(button_text='Display Rooms', key = '-DISPLAY_ROOMS-', visible = True if userType == "Employee" else False, size = (25,3))],
+        [sg.Button(button_text='Manager Report', key = '-REPORT-', visible = True if userType == "Employee" else False, size = (25,3))],
         [sg.Text(infoText, key='-INFO-', font='Default 12', size = (25,30), p = (10,10))]
         ] 
         
@@ -850,95 +997,89 @@ def Main(): #Main Menu, launches all of the options
     graph = window["-DISPLAY-"]
     graph.draw_image(data=Logo, location=(0,350))
 
-    global userMessage
+
     window['-INFO-'].update(userMessage)
     
     while True:     # The Event Loop
         event, values = window.read()#timeout=1)
 
         if event in (sg.WIN_CLOSED, 'Exit', None):
+            window.close()
             break
 
         # Check if any GUI elements have been interacted with
-        if event == '-MENU1-':
+        if event == '-SWITCH-':
             currentGuest = None #resets guest information if switch user selected
             print("Clicked Menu 1")
             # A test for the login messages
-            userType, userMessage = Login()
-            window['-INFO-'].update(userMessage)
+
 
             #Set employee funcionality to visible or hidden depending on userType
-            window['-MENU4-'].update(visible = True if userType == 'Employee' else False)
-            window['-MENU6-'].update(visible = True if userType == 'Employee' else False)
+            window['-DISPLAY_GUESTS-'].update(visible = True if userType == 'Employee' else False)
+            window['-DISPLAY_ROOMS-'].update(visible = True if userType == 'Employee' else False)
+            window['-REPORT-'].update(visible = True if userType == 'Employee' else False)
+            window.close()
+            Login()
 
-        if event == '-MENU2-':
+        if event == '-CREATE_RES-':
             print("Clicked Menu 2")
             window['-INFO-'].update("Menu 2 Clicked")
             
             #Brings in value of currentGuest
             #global currentGuest
-            print(f"Current Guest: {currentGuest}")
-            if(currentGuest == None):
-                window['-INFO-'].update("Get Started by filling out the Guest form")
+            #print(f"Current Guest: {currentGuest.fName}")
 
-            else:
-                print("Selecting room reservation")
-                r, rDateStart, rDateEnd  = SearchRoomsWindow()
+            print("Selecting room reservation")
 
-                if r != 0: #If there is a room, start on reservation checks
-                    roomToReserve = hotel.rooms[int(r)]
+            createOrEdit = 'Create'
+            roomNumber, rDateStart, rDateEnd,currentGuest  = HandleReservationsWindow(userType,currentGuest,createOrEdit)
+
+            if roomNumber != 0: #If there is a room, start on reservation checks
+                roomToReserve = hotel.rooms[int(roomNumber)]
+            
+                #Once room is selected, checks guest information.
+                if currentGuest == None:
                 
-                    #Once room is selected, checks guest information.
-                    if currentGuest == None:
-                    
-                        #If none assigned, prompted to fill out guest form
-                        print("Get Started by filling out the Guest Form")
-                    else:    
-                        #If form filled out or guest info already assigned. continues to set reservation
-                        print(rDateStart)
-                        print(rDateEnd)
-                        res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
-                        sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}\nA Confirmation e-mail will be sent to you shortly.')
-                else: #No Room/Window Closed
-                    print("No Room Selected")
+                    #If none assigned, prompted to fill out guest form
+                    print("Get Started by filling out the Guest Form")
+                else:    
+                    #If form filled out or guest info already assigned. continues to set reservation
+                    res = hotel.createReservation(currentGuest.guestID,rDateStart,rDateEnd,roomToReserve.roomNumber)
+                    sg.popup(f'Successfully created reservation for {currentGuest.fName}.\nYour Reservation number is {res.reservationNumber}\nA Confirmation e-mail will be sent out shortly.')
+            else: #No Room/Window Closed
+                print("No Room Selected")
 
-        if event == '-MENU3-':
-            print("Creating a new guest:")
-            window['-INFO-'].update("Menu 3 Clicked")
+        if event == '-DISPLAY_GUESTS-':
 
-            #Updates currentGuest value from form
-            currentGuest = hotel.createGuest(InformationForm())
-            if currentGuest != None: #If user exits form before filling out
-                print("Updated Current Guest to:",currentGuest.fName,currentGuest.lName, "(ID: ",currentGuest.guestID,")")
+            justDisplayGuests = True
+            currentGuest = DisplayGuests(userType,justDisplayGuests)
 
-        if event == '-MENU4-':
+
+        if event == '-DISPLAY_ROOMS-':
             print("Clicked Menu 4")
             window['-INFO-'].update("Menu 4 Clicked")  
 
             # Opens a new window with interactive display for hotel rooms
             DisplayRoomsWindow(currentDate)
 
-        if event == '-MENU5-':
+        if event == '-DISPLAY_RES-':
             print("Clicked Menu 5")
             window['-INFO-'].update("Menu 5 Clicked")
-            message = DisplayReservations(userType,currentGuest)
-            window['-INFO-'].update(message)
+            userMessage = DisplayReservations(userType,currentGuest)
+            window['-INFO-'].update(userMessage)
 
 
-        if event == '-MENU6-':
+        if event == '-REPORT-':
             print("Clicked Menu 6")
             window['-INFO-'].update("Menu 6 Clicked")
 
-            #DisplayGuests()
             GenerateManagerReport()
 
     window.close()
 
 
+if __name__ == '__main__':
+    Login()
 
 
-# First start user login popup to get userType
-userType, userMessage = Login()
-
-Main()
 

@@ -37,9 +37,9 @@ class Hotel(Reservation):
 
         for index,guests in enumerate(guest_data):
             if index > 0:
-                Guest(str(guests[0]),str(guests[1]),str(guests[2]),str(guests[3]),int(guests[4]))
+                Guest(str(guests[0]),str(guests[1]),str(guests[2]),str(guests[3]),str(guests[4]),int(guests[5]))
             else:
-                Guest(guests[0],guests[1],guests[2],guests[3],guests[4])
+                Guest(guests[0],guests[1],guests[2],guests[3],guests[4],guests[5])
 
         for index,res in enumerate(reservation_data):
             if index > 0:
@@ -48,9 +48,7 @@ class Hotel(Reservation):
                 Reservation(res[0],res[1],res[2],res[3],res[4])
 
 
-    
-    def managerReport(self): #2nd sprint
-        pass
+
 
 
 

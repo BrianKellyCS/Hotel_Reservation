@@ -7,7 +7,6 @@ Date: 11/22/2022
 
 #Initialize hotel and data
 hotel = Hotel()
-hotel.initializeHotelData()
 
 #Initialize a current user as the last user in guest list
 currentGuest = hotel.guests[-1] 
@@ -39,7 +38,7 @@ print(hotel.getGuestByID(35325)) #returns guest not found
 print(hotel.getReservationByGuestID(156))
 
 #Change reservation # 437 to new dates
-hotel.editReservation(437,'2022-10-13','2022-10-16',1)
+hotel.editReservation('2022-10-13','2022-10-16',1,'437')
 
 
 # Test making a guest with different names

@@ -1,7 +1,6 @@
 from classes.hotel import *
 
 hotel = Hotel()
-hotel.initializeHotelData()
 
 #Testing three methods from Reservation class
 def test_createReservation():
@@ -21,9 +20,9 @@ def test_getReservationByResNum():
     Returns a reservation object if valid. Or None if invalid reservation number
     Testing the reservation object returned has correct guest ID
     '''
-    validResNum = 144
-    correctGuestID = 18
-    invalidResNum = 2235235235
+    validResNum = 'C6653'
+    correctGuestID = 34
+    invalidResNum = '2235235235'
 
     assert hotel.getReservationByResNum(validResNum).guestID == correctGuestID
     assert hotel.getReservationByResNum(invalidResNum) == None
@@ -62,7 +61,7 @@ def test_createGuest():
     Parameter: list of guest information.
     Returns the new guest object if valid, or None if invalid (invalid if strings are not used or string length not at least 1 character)
     '''
-    validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com','084e0343a0486ff05530df6c705c8bb4']
+    validGuestInformation = ['Jimmy','Bob','555-5094','jimmyBob@yahoo.com','71bd19d37f19be2c394c2292e32268636e3db282c5c5ad7d4bb14bd09a7e1966']
     correctFirstName = validGuestInformation[0]
     invalidGuestInformation = ['No data',3,'']
 

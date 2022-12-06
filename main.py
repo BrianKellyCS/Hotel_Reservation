@@ -981,7 +981,7 @@ def DisplayReservations(userType,currentGuest):
                 response = sg.popup_yes_no('Are you sure you want to\nCancel this Reservation?')
                 if response == 'Yes':
                     #index 4 in table is reservation number
-                    resToCancel = hotel.getReservationByResNum(data[values['-TABLE-'][0]][4])
+                    resToCancel = hotel.getReservationByResNum(data[values['-TABLE-'][0]][5])
                     print(resToCancel)
                     message = hotel.cancelReservation(resToCancel.reservationNumber)
                     window['-MESSAGE-'].update(message)
@@ -1000,11 +1000,11 @@ def DisplayReservations(userType,currentGuest):
             if len(values['-TABLE-']) == 0:
                 print('no reservation selected')
             else:
-                resToEdit = hotel.getReservationByResNum(data[values['-TABLE-'][0]][4])
+                resToEdit = hotel.getReservationByResNum(data[values['-TABLE-'][0]][5])
                 currentGuest = hotel.getGuestByID(resToEdit.guestID)
 
                 #Save original reservation info incase of cancelling the edit window
-                originalRoomCost = hotel.getRoom(resToEdit.roomNumber).roomPrice
+                originalResCost = resToEdit.reservationCost
                 originalStart = resToEdit.startDate
                 originalEnd = resToEdit.endDate
                 originalRoom = resToEdit.roomNumber
@@ -1019,11 +1019,12 @@ def DisplayReservations(userType,currentGuest):
                 if newRoom != 0:
                     #updates database CSV file
                     hotel.editReservation(newStartDate,newEndDate,newRoom,resToEdit.reservationNumber)
-
+                    newResCost = hotel.calculateResCost(newRoom,newStartDate,newEndDate)
                     #update table data
                     data[values['-TABLE-'][0]][1] = newStartDate
                     data[values['-TABLE-'][0]][2] = newEndDate
                     data[values['-TABLE-'][0]][3] = newRoom
+                    data[values['-TABLE-'][0]][4] = newResCost
 
                     #update hotel reservations array
                     for res in hotel.reservations:
@@ -1031,13 +1032,13 @@ def DisplayReservations(userType,currentGuest):
                             res.startDate = newStartDate
                             res.endDate = newEndDate
                             res.roomNumber = newRoom
-                            newRoomCost = hotel.getRoom(res.roomNumber).roomPrice
+                            res.reservationCost = newResCost
 
                     window['-TABLE-'].update(data)
-                    if newRoomCost > originalRoomCost:
-                        sg.popup(f'${newRoomCost - originalRoomCost} will be charged to your card.')
-                    if originalRoomCost > newRoomCost:
-                        sg.popup(f'${originalRoomCost - newRoomCost} will be refunded to your card.')
+                    if newResCost > originalResCost:
+                        sg.popup(f'${newResCost - originalResCost} will be charged to your card.')
+                    if originalResCost > newResCost:
+                        sg.popup(f'${originalResCost - newResCost} will be refunded to your card.')
                     
                 else:
                     print('no room selected')

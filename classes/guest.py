@@ -1,5 +1,6 @@
 import pandas as pd
 import csv
+import random
 
 '''
 Date of Code: 10/10/2022
@@ -29,20 +30,17 @@ class Guest:
         return iter([self.fName,self.lName,self.phone,self.email,self.guestPWD,self.guestID,])
 
 
-    def assignGuestID(self,id):
+    def assignGuestID(self):
         '''
         Assigns new Guest with an ID number. Function called during creation of new guest in createGuest method. 
-        Parameter is previous guests ID. Ensures no repeat ID is assigned by checking guest list and incrementing ID until valid. 
+        Ensures no repeat ID is assigned by checking guest list. 
         No return value
         '''
-        isValidID = True
-        for idx in Guest.totalGuests:
-            if id == idx.guestID:
-                isValidID = False
-                self.assignGuestID(int(id)+1)
- 
-        if isValidID:
+        id = random.randint(1,500)
+        if id not in Guest.totalGuests:
             self.guestID = id
+        else:
+            self.assignGuestID()
  
             
     def getGuestByID(self,id):
@@ -90,7 +88,7 @@ class Guest:
             self.validateGuestInfo(guestInfo)
             
             newGuest = Guest(guestInfo[0],guestInfo[1],guestInfo[2],guestInfo[3],guestInfo[4])
-            newGuest.assignGuestID(Guest.totalGuests[-2].guestID)
+            newGuest.assignGuestID()
             with open('data/guest_data.csv', 'a',newline='') as stream:
                 writer = csv.writer(stream)
                 writer.writerow(newGuest)

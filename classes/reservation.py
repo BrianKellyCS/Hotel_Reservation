@@ -69,7 +69,7 @@ class Reservation(Guest, Room):
                 writer.writerow(newReservation)
             
             #Uncomment to test email method
-            #self.emailReservation(guestObj,newReservation)
+            self.emailReservation(guestObj,newReservation)
             return newReservation
                 
 

@@ -208,7 +208,7 @@ class Reservation(Guest, Room):
         port = 587
         sender_email = "teamjabhotel@gmail.com"
         password = 'eqrlzonjnrqmgwob'
-        text = f"Hi {guest.fName}, It's confirmed, we'll see you on {reservation.startDate}! Thank you for booking with us. You'll find details of your reservation and payment details enclosed below"
+        text = f"Hi {guest.fName}, It's confirmed, we'll see you on {reservation.startDate}! Thank you for booking with us. You'll find details of your reservation and payment details enclosed below:\n {guest.fName} {guest.lName}\n ID:{guest.guestID}\n email:{guest.email}\n Phone:{guest:phone}\t Reservation#:{reservation.reservationNumber}\n We hope you enjoy your stay and thank you for choosing JAB Hotel."
         subject = "JABHotels- Your Reservation Confirmation"
         message = 'Subject: {}\n\n{}'.format(subject, text)
         

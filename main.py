@@ -279,6 +279,7 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
                 roomDateStart = values['-DATE-']
                 roomDateEnd = values['-ENDDATE-']
                 
+ 
                 #invalid dates
                 if roomDateEnd <= roomDateStart:
                     sg.popup('Start Date must be before End Date')

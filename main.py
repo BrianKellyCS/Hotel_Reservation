@@ -151,10 +151,10 @@ def validCardNumber(cardNumber):
     cardNumber = [x - 9 if x > 9 else x for x in cardNumber]
     
     # Calculate the sum of all the digits
-    sum_of_digits = sum(cardNumber)
+    sumOfDigits = sum(cardNumber)
     
     # Check if the sum is divisible by 10
-    divisibleByTen = sum_of_digits % 10 == 0
+    divisibleByTen = sumOfDigits % 10 == 0
 
     #Check if pass luhn algorithm
     if not divisibleByTen:
@@ -251,6 +251,9 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
             LargeRoomPicture.draw_image(data=LargeRoomImage,location=(0,100))
 
             if event in (sg.WIN_CLOSED, 'Exit', 'Cancel', None):
+                roomSelected = 0
+                roomDateStart = "No Date"
+                roomDateEnd = "No Date"
                 break
             
             if (event == "-ROOMTYPE-"):
@@ -267,7 +270,9 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
                 if createOrEdit == 'Edit':
                     userMessage = 'Updating Reservation'
                 elif createOrEdit == 'Create':
-                    userMessage = f'Cost of Reservation: ${hotel.getRoom(roomChosen).roomPrice}'
+                    delta = datetime.strptime(values['-ENDDATE-'], '%Y-%m-%d').date()  - datetime.strptime(values['-DATE-'], '%Y-%m-%d').date()
+                    resCost = hotel.getRoom(roomChosen).roomPrice * delta.days
+                    userMessage = f'Cost of Reservation: ${resCost}'
                 SearchWindow['-INFO-'].update(userMessage)
                 if roomChosen == "None" or roomChosen == None:
                     roomSelected = 0

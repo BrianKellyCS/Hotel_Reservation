@@ -31,12 +31,11 @@ currentDate = date.today().strftime("%Y-%m-%d")
 def Login():
     '''Login as guest with valid username (email) and password. or as an employee. If new guest, fill out information form to enter main menu'''
     layout = [[sg.Text("Log In", size =(15, 1), font=40)],
-            [sg.Text("Username", size =(15, 1), font=16),sg.InputText(key='-usrnm-', font=16)],
+            [sg.Text("Email", size =(15, 1), font=16),sg.InputText(key='-usrnm-', font=16)],
             [sg.Text("Password", size =(15, 1), font=16),sg.InputText(key='-pwd-', password_char='*', font=16)],
             [sg.Button('Ok'),sg.Button('Cancel'),sg.Button('Sign up')]]
 
     window = sg.Window("Log In", layout)
-
 
     while True:
         validCredentials = False
@@ -65,7 +64,7 @@ def Login():
 
             #Check guests
             for guest in hotel.guests:
-                if values['-usrnm-'] == guest.email and auth_hash == guest.guestPWD:
+                if values['-usrnm-'].upper() == guest.email.upper() and auth_hash == guest.guestPWD:
                     validCredentials = True
                     currentGuest = guest
                     userType = 'Guest'
@@ -124,23 +123,71 @@ def InformationForm():
 def HandleReservationsWindow(userType,currentGuest,createOrEdit):
     '''Opens a new window where the user can select a reservation start date, an end date and a room type and recieve a list of available rooms to reserve. Returns an int for the chosen room number, a string for the reservation start date ("MM/DD/YYYY") and a string for the reservation end date ("MM/DD"YYYY") when submit is pressed and the reservation is valid.'''
     SEARCH_CANVAS_W, SEARCH_CANVAS_H = 300,350
+    SEARCH_IMAGE_W, SEARCH_IMAGE_H = 100,100
+
+    RoomDisplayOne = sg.Graph(
+        canvas_size=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        key="-ROOMBASICDISPLAY-",
+        background_color='#61CCF6',
+        enable_events=True,
+        drag_submits=True)
+
+    RoomDisplayTwo = sg.Graph(
+        canvas_size=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        key="-ROOMMEDDISPLAY-",
+        background_color='#61CCF6',
+        enable_events=True,
+        drag_submits=True)
+
+    RoomDisplayThree = sg.Graph(
+        canvas_size=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        graph_bottom_left=(0, 0),
+        graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
+        key="-ROOMLARGEDISPLAY-",
+        background_color='#61CCF6',
+        enable_events=True,
+        drag_submits=True)
 
     RoomTypeList = ["Basic", "Deluxe", "Suite"]
     SearchList = ["None"]
     roomChosen,roomSelected,roomDateStart,roomDateEnd = 0,0,"No Date","No Date"
 
-    SearchLayout = [
+    SearchLayoutL = [
         [sg.Text("Select Reservation Information: ", key='-RESERVETEXT-', font='Default 12', size = (30,1))],
         [sg.CalendarButton('Select Date',  target='-DATE-', format='%Y-%m-%d'), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton('Select End Date',  target='-ENDDATE-', format='%Y-%m-%d'), sg.Input(key='-ENDDATE-', size=(20,1)) ],
         [sg.Text("Room Type ", key='-ROOMTYPETEXT-', size = (12,1)), sg.Combo(RoomTypeList, s=(15,22), enable_events=True, readonly=True, k='-ROOMTYPE-'), sg.Text("Room Number ", key='-ROOMCHOSENTEXT-', size = (12,1), justification="right"), sg.Combo(SearchList,default_value="None", s=(10,22), enable_events=True, readonly=True, k='-SEARCH-'), ],  
         [sg.Text('Reservation Cost: ', key='-INFO-')],
+        [sg.Text(' ')],
+        [sg.HSep()],
+        [sg.Text("Payment Information: ", font='Default 12', size = (30,1))],
         [sg.Text('Card Number', size =(15, 1)), sg.InputText(key='-CARD-')],
         [sg.CalendarButton('Expiration Date:',  target='-EXP_DATE-', format='%Y-%m-%d'), sg.Input(key='-EXP_DATE-', size=(20,1))],
+        [sg.Text(' ')],
         [sg.Text('Card CVV', size =(15, 1)), sg.InputText(key='-CVV-')],
         [sg.Submit(key='-SUBMIT-'), sg.Cancel()]
     ]
 
-    SearchWindow = sg.Window('Search Rooms', SearchLayout)
+    small_desc = "Basic Room\nCost: $50 per night\nThis room is perfect for the single traveler or a couple.\nOne bed and a pullout couch available. \nIncludes complimentary breakfast."
+    med_desc = "Deluxe Room\nCost: $75 per night\nThis room is large enough for the whole family to relax.\nTwo beds and a pullout couch available. \nIncludes complimentary breakfast."
+    large_desc = "Presidential Suite\nCost: $125 per night\nOur largest room, this room is great for meetings or relaxing in luxury. \nTwo beds, living room area and kitchenette, this space easily houses a large group. \nIncludes complimentary breakfast and spa access."
+
+    SearchLayoutR = [[RoomDisplayOne, sg.Multiline(default_text=small_desc,size=(30,5), key="-SMALLROOMDESC-", write_only=True)],
+    [RoomDisplayTwo, sg.Multiline(default_text=med_desc,size=(30,5), key="-MEDROOMDESC-", write_only=True)],
+    [RoomDisplayThree, sg.Multiline(default_text=large_desc,size=(30,5), key="-LARGEROOMDESC-", write_only=True)]
+    ]
+
+    SearchLayout = [[sg.Col(SearchLayoutL, p=0,vertical_alignment="t"),sg.Col(SearchLayoutR, p=0,vertical_alignment="t")]]
+
+    SearchWindow = sg.Window('Search Rooms', SearchLayout)#, finalize = True)
+
+    SmallRoomPicture = SearchWindow["-ROOMBASICDISPLAY-"]
+    MedRoomPicture = SearchWindow["-ROOMMEDDISPLAY-"]
+    LargeRoomPicture = SearchWindow["-ROOMLARGEDISPLAY-"]
+
     if userType == 'Employee':
         if createOrEdit == 'Create':
             justDisplayGuests = False
@@ -154,7 +201,12 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
         return roomSelected, roomDateStart, roomDateEnd, currentGuest
     else:
         while True:
-            event, values = SearchWindow.read()
+            event, values = SearchWindow.read(timeout=1)
+
+            SmallRoomPicture.draw_image(data=SmallRoomImage, location=(0,100))
+            MedRoomPicture.draw_image(data=MedRoomImage,location=(0,100))
+            LargeRoomPicture.draw_image(data=LargeRoomImage,location=(0,100))
+
             if event in (sg.WIN_CLOSED, 'Exit', 'Cancel', None):
                 break
             
@@ -440,7 +492,7 @@ def GenerateManagerReport():
 
     MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
     YearsList = ['2022']
-    TimeList = ['Monthly', 'Yearly','Weekly']
+    TimeList = ['Monthly', 'Yearly']
 
     TwentyEightDays = [2]
     ThirtyDays = [4,6,9,11]
@@ -644,19 +696,6 @@ def GenerateManagerReport():
                         profitList.append(y)
                     profitList.append(["Total for Month: $" + str(totalProfit)])
 
-                if typeChosen == "Weekly":
-                    #Sorted Reservation List
-                    sortedReservationList.append(["Week One"])
-                    
-                    # Profits Weekly
-                    profitList.append(["= Week One ===============================","===========","============","=== Total: $","9999"])
-                    profitList.append(["LASTNAME",0,"00/00/2022","00/01/2022","$9999"])
-                    profitList.append(["= Week Two ===============================","===========","============","=== Total: $","0"])
-                    profitList.append(["= Week Three ===============================","===========","============","=== Total: $","0"])
-                    profitList.append(["= Week Four ===============================","===========","============","=== Total: $","0"])
-                    profitList.append(["= End of Month ===============================","===========","============","=== Total: $","9999"])
-
-
                 if typeChosen == "Yearly":
                     sortEnds = []
                     sortStarts = []
@@ -817,7 +856,7 @@ def DisplayGuests(userType,justDisplayGuests):
             window['-TABLE-'].update(data)
         
 
-            
+      
     window.close()
 
 def DisplayReservations(userType,currentGuest):
@@ -833,7 +872,6 @@ def DisplayReservations(userType,currentGuest):
             #message = "Get started by filling out guest form"
             #return message
 
-        
         #Only display reservations for curent guest
         guestReservations = hotel.getReservationByGuestID(currentGuest.guestID)
         if guestReservations == None:

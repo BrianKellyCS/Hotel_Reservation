@@ -292,9 +292,15 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
                     roomDateStart = "No Date"
                     roomDateEnd = "No Date"
                 
-                #invalid card
+                #invalid card number
                 if not validCardNumber(values['-CARD-']):
                     sg.popup("Invalid Card number.\nPlease Re-enter.")
+                #invalid cvv number length
+                elif values['-CVV-'] == '' or len(values['-CVV-']) > 4:
+                    sg.popup("Invalid CVV Number.\nPlease Re-enter.") 
+                #expired card date
+                elif datetime.strptime(values['-EXP_DATE-'], '%Y-%m-%d').date() <= datetime.strptime(currentDate, '%Y-%m-%d').date():
+                    sg.popup("Card Date is Expired.\nPlease verify that the correct date was entered")
                 else:
                     break
 

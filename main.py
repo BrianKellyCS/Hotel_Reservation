@@ -24,15 +24,16 @@ sg.theme('DarkTeal3')
 
 infoText = "Welcome to JAB Hotel!"
 hotel = Hotel()
-hotel.initializeHotelData()
 rooms = hotel.rooms
 currentDate = date.today().strftime("%Y-%m-%d")
 
 def Login():
     '''Login as guest with valid username (email) and password. or as an employee. If new guest, fill out information form to enter main menu'''
+    admin_hash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
     layout = [[sg.Text("Log In", size =(15, 1), font=40)],
             [sg.Text("Email", size =(15, 1), font=16),sg.InputText(key='-usrnm-', font=16)],
             [sg.Text("Password", size =(15, 1), font=16),sg.InputText(key='-pwd-', password_char='*', font=16)],
+            [sg.Checkbox('Show Password',key='CHECK',default=False, enable_events=True)],
             [sg.Button('Ok'),sg.Button('Cancel'),sg.Button('Sign up')]]
 
     window = sg.Window("Log In", layout)
@@ -49,15 +50,27 @@ def Login():
             if currentGuest != None:
                 userType = 'Guest'
                 userMessage = f"Welcome VALUED GUEST # {currentGuest.guestID}!"
-                validCredentials = True
                 window.close()
+                Main(userType,currentGuest,userMessage)
             else:
                 userMessage = "Did not fill out form."
+
+        if values['CHECK'] == True:
+            try:
+                window['-pwd-'].update(password_char='')
+            except Exception as e:
+                print(e)
+
+        if values['CHECK'] == False:
+            try:
+                window['-pwd-'].update(password_char='*')
+            except Exception as e:
+                print(e) 
 
         if event == "Ok":
             try:
                 auth = values['-pwd-'].encode()
-                auth_hash = hashlib.md5(auth).hexdigest()
+                auth_hash = hashlib.sha256(auth).hexdigest()
                 print(auth_hash)
             except Exception as e:
                 print(e)
@@ -73,7 +86,7 @@ def Login():
                     break
 
             #Check if employee login
-            if values['-usrnm-'] == 'admin' and values['-pwd-'] == 'admin':
+            if values['-usrnm-'] == 'admin' and values['-pwd-'] == admin_hash:
                 validCredentials = True
                 currentGuest = None
                 userType = 'Employee'
@@ -83,10 +96,10 @@ def Login():
                 userMessage = "Invalid Username or Password.\nPlease try again."
 
 
-        if not validCredentials:
-            sg.popup(userMessage)
-        else:
-            Main(userType,currentGuest,userMessage)
+            if not validCredentials:
+                sg.popup(userMessage)
+            else:
+                Main(userType,currentGuest,userMessage)
 
 
     window.close()
@@ -113,7 +126,7 @@ def InformationForm():
             print('Information not saved. Must fill out form completely')
         else:
             values[4] = values[4].encode()
-            values[4] = hashlib.md5(values[4]).hexdigest()
+            values[4] = hashlib.sha256(values[4]).hexdigest()
             return values[0], values[1], values[2], values[3], values[4]
 
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):

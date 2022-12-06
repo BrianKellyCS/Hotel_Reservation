@@ -17,6 +17,7 @@ class Hotel(Reservation):
         self.rooms = Room.totalRooms
         self.guests = Guest.totalGuests
         self.reservations = Reservation.totalReservations
+        self.initializeHotelData()
     
 
     def initializeHotelData(self):

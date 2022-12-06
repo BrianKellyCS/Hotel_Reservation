@@ -208,8 +208,9 @@ class Reservation(Guest, Room):
         port = 587
         sender_email = "teamjabhotel@gmail.com"
         password = 'eqrlzonjnrqmgwob'
-        message = f"Hi {guest.fName}, It's confirmed, we'll see you on {reservation.startDate}! Thank you for booking with us. You'll find details of your reservation and payment details enclosed below"
-        
+        text = f"Hi {guest.fName}, It's confirmed, we'll see you on {reservation.startDate}! Thank you for booking with us. You'll find details of your reservation and payment details enclosed below"
+        subject = "JABHotels- Your Reservation Confirmation"
+        message = 'Subject: {}\n\n{}'.format(subject, text)
         
         try:
             server = smtplib.SMTP(smtp_server, port)

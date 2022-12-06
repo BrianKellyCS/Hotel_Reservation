@@ -279,15 +279,7 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
                 roomDateStart = values['-DATE-']
                 roomDateEnd = values['-ENDDATE-']
                 
-                #was working on this before i saw an updated version but I just thought to just add and let me know what you guys think. Should I delete or keep.
-                """cVV = values['CVV']
-                if cVV == '' or len(cVV) > 4:
-                    sg.popup("Invalid input. Try Again")
-                    break
-                else:
-                    sg.popup("Card is successfull.")"""
-                    
-                
+ 
                 #invalid dates
                 if roomDateEnd <= roomDateStart:
                     sg.popup('Start Date must be before End Date')

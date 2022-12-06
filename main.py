@@ -132,6 +132,36 @@ def InformationForm():
     if (event == "Cancel" or event == "Exit" or event == sg.WIN_CLOSED):
         return None
 
+def validCardNumber(cardNumber):
+    '''Uses Luhn Algorithm to validate card number'''
+    #Strip spaces or dashes from card number
+    cardNumber = cardNumber.replace(' ','').replace('-','')
+
+    #Check if card number is correct length and only has digits
+    if len(cardNumber) not in [13,14,15,16] or not cardNumber.isdigit():
+        return False
+
+    # Reverse the card number
+    cardNumber = cardNumber[::-1]
+    
+    # Convert the card number to a list of integers and double every second digit
+    cardNumber = [int(x) * (i % 2 + 1) for i, x in enumerate(cardNumber)]
+    
+    # Subtract 9 from any doubled digits that are greater than 9
+    cardNumber = [x - 9 if x > 9 else x for x in cardNumber]
+    
+    # Calculate the sum of all the digits
+    sum_of_digits = sum(cardNumber)
+    
+    # Check if the sum is divisible by 10
+    divisibleByTen = sum_of_digits % 10 == 0
+
+    #Check if pass luhn algorithm
+    if not divisibleByTen:
+        return False
+    
+    #If al checks pass, card is valid
+    return True
 
 def HandleReservationsWindow(userType,currentGuest,createOrEdit):
     '''Opens a new window where the user can select a reservation start date, an end date and a room type and recieve a list of available rooms to reserve. Returns an int for the chosen room number, a string for the reservation start date ("MM/DD/YYYY") and a string for the reservation end date ("MM/DD"YYYY") when submit is pressed and the reservation is valid.'''
@@ -248,11 +278,17 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
                 roomSelected = roomChosen
                 roomDateStart = values['-DATE-']
                 roomDateEnd = values['-ENDDATE-']
+                
+                #invalid dates
                 if roomDateEnd <= roomDateStart:
                     sg.popup('Start Date must be before End Date')
                     roomSelected = 0
                     roomDateStart = "No Date"
                     roomDateEnd = "No Date"
+                
+                #invalid card
+                if not validCardNumber(values['-CARD-']):
+                    sg.popup("Invalid Card number.\nPlease Re-enter.")
                 else:
                     break
 

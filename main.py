@@ -86,7 +86,7 @@ def Login():
                     break
 
             #Check if employee login
-            if values['-usrnm-'] == 'admin' and values['-pwd-'] == admin_hash:
+            if values['-usrnm-'] == 'admin' and auth_hash == admin_hash:
                 validCredentials = True
                 currentGuest = None
                 userType = 'Employee'

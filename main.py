@@ -173,27 +173,21 @@ def HandleReservationsWindow(userType,currentGuest,createOrEdit):
         graph_bottom_left=(0, 0),
         graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
         key="-ROOMBASICDISPLAY-",
-        background_color='#61CCF6',
-        enable_events=True,
-        drag_submits=True)
+        background_color='#61CCF6')
 
     RoomDisplayTwo = sg.Graph(
         canvas_size=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
         graph_bottom_left=(0, 0),
         graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
         key="-ROOMMEDDISPLAY-",
-        background_color='#61CCF6',
-        enable_events=True,
-        drag_submits=True)
+        background_color='#61CCF6')
 
     RoomDisplayThree = sg.Graph(
         canvas_size=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
         graph_bottom_left=(0, 0),
         graph_top_right=(SEARCH_IMAGE_W, SEARCH_IMAGE_H),
         key="-ROOMLARGEDISPLAY-",
-        background_color='#61CCF6',
-        enable_events=True,
-        drag_submits=True)
+        background_color='#61CCF6')
 
     RoomTypeList = ["Basic", "Deluxe", "Suite"]
     SearchList = ["None"]
@@ -527,7 +521,9 @@ def GenerateManagerReport():
     print("Starting Manager Report")
     REPORT_DISPLAY_W, REPORT_DISPLAY_H = 500, 150
     JAB_MINI_W, JAB_MINI_H = 300, 350
-
+    BAR_WIDTH = 35      # width of each bar
+    BAR_SPACING = 40    # space between each bar
+    EDGE_OFFSET = 10     # offset from the left edge for first bar
     # Displays for images and graphs
     ReportDisplay = sg.Graph(
         canvas_size=(REPORT_DISPLAY_W, REPORT_DISPLAY_H),
@@ -542,7 +538,7 @@ def GenerateManagerReport():
         canvas_size=(JAB_MINI_W, JAB_MINI_H),
         graph_bottom_left=(0, 0),
         graph_top_right=(JAB_MINI_W, JAB_MINI_H),
-        key="-REPORTDISPLAY-",
+        key="-JABMINIDISPLAY-",
         background_color='#61CCF6',
         pad = 25,
         enable_events=True)
@@ -550,8 +546,13 @@ def GenerateManagerReport():
     #Get current date and extract the month number from it as default
     dateToDisplay = currentDate
     currentMonth = int(dateToDisplay[0] + dateToDisplay[1])
+    tempCurrDate = datetime.strptime(currentDate, '%Y-%m-%d').date()
 
     MonthsList = ['January', 'February', 'March', 'April', 'May','June','July','August','September','October','November','December']
+    shortMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    resByMonth = [0,0,0,0,0,0,0,0,0,0,0,0]
+    mostRes = 0
+
     YearsList = ['2022']
     TimeList = ['Monthly', 'Yearly']
 
@@ -591,6 +592,17 @@ def GenerateManagerReport():
                 tempReservation.append(str(reservation.startDate)[0:10])
                 tempReservation.append(str(reservation.endDate)[0:10])
 
+                #Temp dates for bar graph use
+                tempDate = str(reservation.startDate)
+                tempDate = datetime.strptime(tempDate, '%Y-%m-%d').date()
+
+               # Keep track of which months got reservations in the current year
+                if tempDate.year == tempCurrDate.year:
+                    resByMonth[tempDate.month-1] += 1;
+
+                    if resByMonth[tempDate.month-1] > mostRes:
+                        mostRes = resByMonth[tempDate.month-1]
+
                 reservationList.append(tempReservation)
             reservationCount = reservationCount + 1
         except Exception as e:
@@ -625,7 +637,7 @@ def GenerateManagerReport():
         [JabMiniDisplay]
     ]
 
-    ReportLayoutR =    [[ReportDisplay],
+    ReportLayoutR =    [[sg.Text("Monthly reservations for "+str(tempCurrDate.year), font='Default 12', text_color = "white", size = (30,1))],[ReportDisplay],
     [sg.Text('Information:',s=(15,1))], 
     [sg.TabGroup([[sg.Tab('Guest Information', GuestLayout, key="-GUESTTAB-" ), sg.Tab('All Reservations', ReservationLayout, key = "-RESERVATIONTAB-" ), sg.Tab('Reservations (Sorted)',  SortedReservationsLayout, key = "-SORTEDTAB-" ), sg.Tab('Profits',  ProfitLayout ,visible=True,key='-PROFITSTAB-')]], size = (550,300), enable_events=True )]
     ]
@@ -635,12 +647,24 @@ def GenerateManagerReport():
     ReportDisplayWindow = sg.Window("Manager's Report", ReportLayout, finalize = True)
     ReportGraph = ReportDisplayWindow["-REPORTDISPLAY-"]
 
-    JabMiniImage = ReportDisplayWindow["-REPORTDISPLAY-"]
+    JabMiniImage = ReportDisplayWindow["-JABMINIDISPLAY-"]
     JabMiniImage.draw_image(data=Logo, location=(0,350))
+
 
     while True:         # The Event Loop
         event, values = ReportDisplayWindow.read(timeout=1)
         
+        #Bar Graph display update, runs for twelve months
+        ReportGraph.erase()
+        for i in range(12):
+            graphValue = resByMonth[i]
+            graphFixed = graphValue * (110/mostRes) + 20
+            ReportGraph.draw_rectangle(top_left=(i * BAR_SPACING + EDGE_OFFSET, graphFixed),
+                             bottom_right=(i * BAR_SPACING + EDGE_OFFSET + BAR_WIDTH, 20),
+                             fill_color='#394a6d')#fill_color=sg.theme_button_color()[1])
+            ReportGraph.draw_text(text=shortMonths[i], location=(i*BAR_SPACING+EDGE_OFFSET+17, 10), font='_ 12')
+            ReportGraph.draw_text(text=graphValue, location=(i*BAR_SPACING+EDGE_OFFSET+18, graphFixed+10), font='_ 12')
+
         if event in (sg.WIN_CLOSED, 'Exit', '-RETURN-', None):
             break
 
@@ -652,8 +676,6 @@ def GenerateManagerReport():
                 # Initialize values+tables and get working date information from selected date
                 workingDate = values['-DATE-']
                 workingDate = datetime.strptime(workingDate, '%Y-%m-%d').date()
-                #currentMonth = int(values['-DATE-'][0] + values['-DATE-'][1])
-                #currentYear = int(values['-DATE-'][6:10])
                 currentMonth = workingDate.month
                 currentYear = workingDate.year
 

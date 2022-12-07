@@ -36,11 +36,11 @@ class Guest:
         Ensures no repeat ID is assigned by checking guest list. 
         No return value
         '''
-        id = random.randint(1,500)
-        if id not in Guest.totalGuests:
-            self.guestID = id
-        else:
-            self.assignGuestID()
+        id = random.randint(1,1000)
+        for guest in Guest.totalGuests:
+            if id == guest.guestID:
+                self.assignGuestID()
+        self.guestID = id
  
             
     def getGuestByID(self,id):

@@ -54,10 +54,10 @@ class Reservation(Guest, Room):
         digits = string.digits
         resNum = ''.join(random.choice(characters))
         resNum += ''.join(random.choice(digits) for _ in range(4))
-        if resNum not in Reservation.totalReservations:
-            return resNum
-        else:
-            self.generateReservationNumber()
+        for res in Reservation.totalReservations:
+            if resNum == res.reservationNumber:
+                self.generateReservationNumber()
+        return resNum        
 
     def calculateResCost(self,roomNumber,startDate,endDate):
         try:

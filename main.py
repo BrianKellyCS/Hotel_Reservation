@@ -583,11 +583,24 @@ def GenerateManagerReport():
     for reservation in hotel.reservations:
         try:
             if reservationCount >= 1:
+                
                 tempReservation = [] # Formats data to be more readable
-                tempReservation.append(guestsList[int(reservation.guestID)-1][1]) #gets guest name from the ID number
+#                tempReservation.append(guestsList[int(reservation.guestID)-1][1]) #gets guest name from the ID number
+
+                tempGuestName = "No Name Found"
+
+                for x in guestsList:
+                    if x[2] == reservation.guestID:
+                        print("ID Match found.")
+                        tempGuestName = x[1]
+                
+                tempReservation.append(tempGuestName) #gets guest name from the ID number
+                print("Using "+str(tempGuestName))
+
                 tempReservation.append(reservation.guestID)
                 tempReservation.append(reservation.reservationNumber)
                 tempReservation.append(reservation.roomNumber)
+
                 # Only the dates, no timestamps
                 tempReservation.append(str(reservation.startDate)[0:10])
                 tempReservation.append(str(reservation.endDate)[0:10])

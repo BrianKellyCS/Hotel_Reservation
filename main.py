@@ -744,16 +744,16 @@ def GenerateManagerReport():
 
                                 profitEnds.append(tempProfitList)
                                 
-                            if ((startMonth == currentMonth)and (endMonth == currentMonth)): # Reservation is in current month
+                            if ((startMonth == currentMonth) and (endMonth == currentMonth)): # Reservation is in current month
                                 sortStarts.append(reservations)
 
-                                daysStayed = (endDay - startDay + 1)
+                                daysStayed = (endDay - startDay) # Only counts the nights
                                 roomProfit = rooms[roomNum].roomPrice * daysStayed
 
                                 profitWrite = True
 
 
-                            if ((startMonth == currentMonth)and (endMonth != currentMonth)): # Reservation is in current month
+                            if ((startMonth == currentMonth) and (endMonth != currentMonth)): # Reservation is in current month
                                 sortStarts.append(reservations)
 
                                 daysStayed = (days - startDay + 1)
@@ -835,11 +835,11 @@ def GenerateManagerReport():
 
                             # Checks if the reservation goes into another month
                             if startDay <= endDay:
-                                daysStayed = (endDay - startDay + 1)
+                                daysStayed = (endDay - startDay)
                             if ((endDay < startDay) and (endYear == currentYear)):
-                                daysStayed = (days - startDay + 1) + endDay # days in month + days in other month    
+                                daysStayed = (days - startDay) + endDay # days in month + days in other month    
                             if ((endDay < startDay) and (endYear != currentYear)):
-                                daysStayed = (days - startDay + 1)
+                                daysStayed = (days - startDay)
                                 if daysStayed <= 0: daysStayed = 1 #Quick bugfix for smaller months
                             roomProfit = rooms[roomNum].roomPrice * daysStayed
 
